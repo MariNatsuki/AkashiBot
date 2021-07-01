@@ -1,0 +1,25 @@
+{
+  "Discord": {
+    "Authentication": {
+      "token": ""
+    }
+  },
+  "Bot": {
+    "Command": {
+      "prefix": "!"
+    }
+  },
+  "Wiki": {
+    "Detail": {
+      "url": {
+        "main": "https://azurlane.koumakan.jp/",
+        "api": "https://azurlane.koumakan.jp/w/api.php"
+      }
+    },
+    "Others": {
+      "Wikipedia": {
+        "url": "https://www.wikipedia.org/wiki"
+      }
+    }
+  }
+}
