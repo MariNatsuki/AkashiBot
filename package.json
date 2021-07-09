@@ -4,7 +4,8 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "start": "tsc && node -r dotenv/config dist/app.js",
+    "start": "npx tsc && node -r dotenv/config dist/app.js",
+    "build": "npx tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

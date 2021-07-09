@@ -7,15 +7,20 @@ import cejs = require('cejs')
 
 cejs.run('application.net.wiki')
 
-export function matchShipWithIcon(shipName: string, imageName: string) {
+export function matchShipWithIcon(shipName: string, imageName: string): boolean {
   return new RegExp(`^(File:${shipName}Icon).((png)|(jpg))$`).test(imageName)
 }
 
-export function matchShipWithPortrait(shipName: string, imageName: string) {
+export function matchShipWithPortrait(shipName: string, imageName: string): boolean {
   return new RegExp(`^(File:${shipName}).((png)|(jpg))$`).test(imageName)
 }
 
-export function extractImagesFromWikiImages(name: string, images: any[]): { icon?: string, portrait?: string } {
+export function matchSkillImageId(imageName: string): string {
+  const match = imageName.match(/^File:Skill(.*?).png|jpg$/)
+  return match ? match[1].trim() : null
+}
+
+export function extractShipImagesFromWikiImages(name: string, images: any[]): { icon?: string, portrait?: string } {
   return images.reduce((accumulator, currentImage) => {
     const imageUrl = (currentImage.imageinfo[0] as any).url
     if (matchShipWithIcon(name, currentImage.title)) {
@@ -31,47 +36,57 @@ export function extractEquipmentsFromInfo(shipInfo: any): Equipment[] {
   const result: Equipment[] = []
   if (typeof shipInfo !== 'object') return result
   let count = 1
-  while (shipInfo[`eq${count}Type`]) {
+  while (shipInfo[`Eq${count}Type`]) {
     result.push({
-      type: shipInfo[`eq${count}Type`],
-      quantity: shipInfo[`eq${count}BaseMax`],
-      efficiencyMin: shipInfo[`eq${count}EffInit`],
-      efficiencyMax: shipInfo[`eq${count}EffInitMax`],
+      type: shipInfo[`Eq${count}Type`],
+      quantity: shipInfo[`Eq${count}BaseMax`],
+      efficiencyMin: shipInfo[`Eq${count}EffInit`],
+      efficiencyMax: shipInfo[`Eq${count}EffInitMax`],
     })
     count++
   }
   return result
 }
 
-export function extractSkillsFromInfo(shipInfo: any): Skill[] {
+export function extractSkillsFromInfo(shipInfo: any, images = {}): Skill[] {
   const result: Skill[] = []
   if (typeof shipInfo !== 'object') return result
   let count = 1
-  while (shipInfo[`skill${count}`]) {
+  while (shipInfo[`Skill${count}`]) {
     result.push({
-      name: shipInfo[`skill${count}`],
-      type: shipInfo[`type${count}`],
-      description: shipInfo[`skill${count}Desc`]
+      name: shipInfo[`Skill${count}`],
+      type: shipInfo[`Type${count}`],
+      description: shipInfo[`Skill${count}Desc`],
+      ...(images[shipInfo[`Skill${count}Icon`]] && { image: images[shipInfo[`Skill${count}Icon`]] })
     })
     count++
   }
   return result
 }
 
-export function parseInfoFromWikitext(wikitext: string, options?: ParseWikitextOptions): { [key: string]: string } {
-  let data
+export function extractSkillImagesFromWikiImages(images: any[]): { [imageId: string]: string } {
+  return images.reduce((accumulator, currentImage) => {
+    const imageUrl = (currentImage.imageinfo[0] as any).url
+    const skillId = matchSkillImageId(currentImage.title)
+    if (skillId) {
+      accumulator[skillId] = imageUrl
+    }
+    return accumulator
+  }, {})
+}
+
+export function parseInfoFromWikitext(wikitext: string, options?: ParseWikitextOptions): Record<string, any> {
+  const data = {}
   const parsed = cejs.wiki.parser(wikitext)
   parsed.each('template', token => {
-    if (token.name.startsWith('Ship')) {
-      data = token.parameters
-      return parsed.each.exit
+    data[token.name] = data[token.name] || {}
+    for (const [key, value] of Object.entries(token.parameters)) {
+      data[token.name][key] = convertWikitextValue(
+        value, { ...generateWikitextParseOptions(WikitextParserOptionsType.Default), ...options }
+      ).trim()
     }
   })
-  for (const [key, value] of Object.entries(data)) {
-    data[key[0].toLowerCase() + key.slice(1)] = convertWikitextValue(
-      value, { ...generateWikitextParseOptions(WikitextParserOptionsType.Default), ...options }
-    ).trim()
-  }
+
   return data
 }
 

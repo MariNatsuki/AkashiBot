@@ -4,7 +4,12 @@ export type ShipInfo = {
   description: string
   images: { icon?: string, portrait?: string }
   va: string
-  artist: string
+  artist: {
+    name: string,
+    link: string,
+    pixiv: string,
+    twitter: string
+  }
   rarity: string
   nationality: string
   shipType: string
@@ -23,6 +28,7 @@ export type Equipment = {
 
 export type Skill = {
   name: string
-  type: string
-  description: string
+  type?: string
+  description?: string
+  image?: string
 }

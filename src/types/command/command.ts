@@ -7,8 +7,7 @@ const Command = t.iface([], {
   'guildOnly': t.opt('boolean'),
   'args': t.opt('boolean'),
   'usage': t.opt('string'),
-  'execute': t.func(t.iface([], {
-  }), t.param('message', 'Discord.Message'), t.param('args', 'any')),
+  'execute': t.func('CommandExecutionResult', t.param('message', 'Discord.Message'), t.param('args', 'any')),
 })
 
 export const exportedTypeSuite: t.ITypeSuite = {
@@ -21,5 +20,14 @@ export interface Command {
   guildOnly?: boolean
   args?: boolean
   usage?: string
-  execute: (message: Discord.Message, args: any) => {}
+  execute: (message: Discord.Message, args: any) => Promise<CommandExecutionResult>
+}
+
+export interface CommandExecutionResult {
+  status: boolean
+  error?: any
+}
+
+export enum CommandResponseType {
+  Fail = 'fail'
 }

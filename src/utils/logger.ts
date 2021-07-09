@@ -20,6 +20,10 @@ export class Logger {
     this.logger.info(message)
   }
 
+  warn(message: any): void {
+    this.logger.warn(message)
+  }
+
   error(message: any, trace?: any): void {
     this.logger.error(message, { trace })
   }

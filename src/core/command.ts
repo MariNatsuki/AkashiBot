@@ -2,7 +2,7 @@ import Discord from 'discord.js'
 import fs = require('fs')
 import { Logger } from '../utils/logger'
 import { isValidCommand, formatCommandMessage } from '../helpers/command.helper'
-import { Command as CommandType } from '../types/command'
+import { Command as CommandType, CommandExecutionResult } from '../types/command'
 
 export class Command {
   private logger = new Logger(Command.name)
@@ -15,42 +15,47 @@ export class Command {
       for (const file of commandFiles) {
         this.logger.log(`Adding command ${file}`)
         try {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           const command = require(`../commands/${file.split('.')[0]}`)
 
-          if (!isValidCommand(command)) {
-            throw new TypeError('Wrong format')
+          const commandValid = isValidCommand(command)
+          if (typeof commandValid === 'object') {
+            throw commandValid
           }
 
           this.add(command)
+          this.logger.log(`Command ${file} loaded!`)
         }
         catch (e) {
           this.logger.error(`Command ${file} failed to load`, e.stack)
         }
       }
     } catch (e) {
-      this.logger.error('There were something wrong during command loading', e.stack)
+      this.logger.error('There were something wrong during commands loading', e.stack)
     }
   }
 
   add(command: any) {
-    return this.commandList.set(command.name, command)
+    this.commandList.set(command.name, command)
   }
 
   remove(commandName: string) {
     return this.commandList.delete(commandName)
   }
 
-  execute(message: Discord.Message) {
+  async execute(message: Discord.Message) {
     const command = formatCommandMessage(message)
     if (!this.commandList.has(command.name)) return "Command doesn't exist"
 
     this.logger.log(`Processing Command ${command.name} from Channel ${message.channel.id} (Server: ${message.guild.id})`)
 
     try {
-      return this.commandList.get(command.name).execute(message, command.args)
+      const result: CommandExecutionResult = await this.commandList.get(command.name).execute(message, command.args)
+      if (!result.status) {
+        throw result.error || new Error('Command execution failed')
+      }
     } catch (e) {
       this.logger.error(e)
-      message.reply('There was an error trying to execute that command')
     }
   }
 }
