@@ -4,9 +4,11 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "start": "npx tsc && node -r dotenv/config dist/app.js",
-    "build": "npx tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/app.js",
+    "postinstall": "tsc",
+    "watch-node": "nodemon dist/app.js",
+    "watch-ts": "tsc -w",
+    "deploy": "git push heroku master -f"
   },
   "author": "",
   "license": "ISC",
@@ -22,6 +24,7 @@
     "header-generator": "^1.0.0",
     "sodium": "^3.0.2",
     "ts-interface-checker": "^0.2.1",
+    "tslib": "^2.3.0",
     "utf-8-validate": "^5.0.4",
     "wikijs": "^6.2.1",
     "winston": "^3.3.3",
@@ -37,5 +40,8 @@
     "prettier": "^2.3.2",
     "ts-interface-builder": "^0.3.0",
     "typescript": "^4.2.3"
+  },
+  "engines": {
+    "node": "14.2"
   }
 }
