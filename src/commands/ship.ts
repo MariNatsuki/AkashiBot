@@ -10,6 +10,8 @@ import { PaginateEmbed } from '../classes/paginate-embed'
 module.exports = {
   name: 'ship',
   description: 'Find Ship on Wiki',
+  notifyAuthor: true,
+  guildOnly: true,
   async execute(message, args): Promise<CommandExecutionResult> {
     try {
       const ship = await findShip(args.join(' ').trim(), generateWikitextParseOptions(WikitextParserOptionsType.Discord))

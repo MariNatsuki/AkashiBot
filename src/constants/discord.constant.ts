@@ -13,3 +13,9 @@ export enum UnicodeEmoji {
   Nine = '9️⃣',
   Ten = '🔟'
 }
+
+export enum CommandStatusEmoji {
+  Processing = '🔄',
+  Done = '✅',
+  Failed = '❌'
+}

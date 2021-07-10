@@ -1,8 +1,9 @@
-import Discord from 'discord.js'
+import Discord, { MessageReaction } from 'discord.js'
 import fs = require('fs')
 import { Logger } from '../utils/logger'
 import { isValidCommand, formatCommandMessage } from '../helpers/command.helper'
 import { Command as CommandType, CommandExecutionResult } from '../types/command'
+import { CommandStatusEmoji } from '../constants/discord.constant'
 
 export class Command {
   private logger = new Logger(Command.name)
@@ -45,17 +46,40 @@ export class Command {
 
   async execute(message: Discord.Message) {
     const command = formatCommandMessage(message)
-    if (!this.commandList.has(command.name)) return "Command doesn't exist"
+    if (!this.commandList.has(command.name)) {
+      return this.logger.log(`Command [${command.name}] doesn't exist`)
+    }
+
+    if (this.commandList.get(command.name).guildOnly && message.channel.type === 'dm') {
+      return this.logger.log(`Command [${command.name}] can't execute inside DMs`)
+    }
 
     this.logger.log(`Processing Command ${command.name} from Channel ${message.channel.id} (Server: ${message.guild.id})`)
 
+    const cmd = this.commandList.get(command.name)
+    let react: MessageReaction
     try {
-      const result: CommandExecutionResult = await this.commandList.get(command.name).execute(message, command.args)
+      if (cmd.notifyAuthor) {
+        react = await message.react(CommandStatusEmoji.Processing)
+      }
+      const result: CommandExecutionResult = await cmd.execute(message, command.args)
       if (!result.status) {
-        throw result.error || new Error('Command execution failed')
+        throw result.error || new Error(`Command [${command.name}] failed to execute`)
+      }
+      if (cmd.notifyAuthor) {
+        if (react) {
+          await react.remove()
+        }
+        react = await message.react(CommandStatusEmoji.Done)
       }
     } catch (e) {
       this.logger.error(e)
+      if (cmd.notifyAuthor) {
+        if (react) {
+          await react.remove()
+        }
+        await message.react(CommandStatusEmoji.Failed)
+      }
     }
   }
 }

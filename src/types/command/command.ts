@@ -4,6 +4,7 @@ import Discord from 'discord.js'
 const Command = t.iface([], {
   'name': 'string',
   'description': t.opt('string'),
+  'notifyAuthor': t.opt('boolean'),
   'guildOnly': t.opt('boolean'),
   'args': t.opt('boolean'),
   'usage': t.opt('string'),
@@ -17,6 +18,7 @@ export const exportedTypeSuite: t.ITypeSuite = {
 export interface Command {
   name: string
   description?: string
+  notifyAuthor? :boolean
   guildOnly?: boolean
   args?: boolean
   usage?: string
