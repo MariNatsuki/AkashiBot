@@ -26,7 +26,7 @@ const pageSelectionEmotes = [
 export class PaginateEmbed {
   private logger = new Logger(PaginateEmbed.name)
   private waitTime = config.get('Bot.Command.reactionWaitTime', 15000)
-  private reactedEmotes: MessageReaction[] = []
+  private reactedEmotes: string[] = []
   private isProcessing = false
 
   constructor(
@@ -47,10 +47,11 @@ export class PaginateEmbed {
   private async reactPaginationEmotes() {
     await this.message.react(UnicodeEmoji.ArrowLeft)
     await this.message.react(UnicodeEmoji.ArrowRight)
+    this.reactedEmotes.push(UnicodeEmoji.ArrowLeft, UnicodeEmoji.ArrowRight)
     const pageCount = this.embedList.length
     const toWords = new ToWords()
     for (let i = 1; i <= pageCount; i++) {
-      this.reactedEmotes.push(await this.message.react(UnicodeEmoji[toWords.convert(i)]))
+      this.reactedEmotes.push((await this.message.react(UnicodeEmoji[toWords.convert(i)])).emoji.name)
     }
   }
 
@@ -62,41 +63,42 @@ export class PaginateEmbed {
     }
 
     const collector = this.message.createReactionCollector(filter, { time: waitTime || this.waitTime, dispose: true })
-    const handleReaction = async reaction => {
-      if (this.isProcessing) {
-        return
-      }
-      this.isProcessing = true
 
-      try {
-        switch (reaction.emoji.name) {
-          case UnicodeEmoji.ArrowLeft:
-            this.embedList.previousPage()
-            break
-          case UnicodeEmoji.ArrowRight:
-            this.embedList.nextPage()
-            break
-          default:
-            this.embedList.goToPage(pageSelectionEmotes.findIndex(item => item === reaction.emoji.name))
-        }
-        await this.message.edit(this.embedList.currentPage())
-      }
-      catch (e) {
-        this.logger.error('Error encountered', e.stack)
-      }
-      finally {
-        this.isProcessing = false
-      }
+    collector.on('collect', this.handleReaction.bind(this))
+
+    collector.on('remove', this.handleReaction.bind(this))
+
+    collector.on('end', this.finishUp.bind(this))
+  }
+
+  private async handleReaction(reaction) {
+    if (this.isProcessing) {
+      return
     }
+    this.isProcessing = true
 
-    collector.on('collect', handleReaction)
-
-    collector.on('remove', handleReaction)
-
-    collector.on('end', () => this.finishUp)
+    try {
+      switch (reaction.emoji.name) {
+        case UnicodeEmoji.ArrowLeft:
+          this.embedList.previousPage()
+          break
+        case UnicodeEmoji.ArrowRight:
+          this.embedList.nextPage()
+          break
+        default:
+          this.embedList.goToPage(pageSelectionEmotes.findIndex(item => item === reaction.emoji.name))
+      }
+      await this.message.edit(this.embedList.currentPage())
+    }
+    catch (e) {
+      this.logger.error('Error encountered', e.stack)
+    }
+    finally {
+      this.isProcessing = false
+    }
   }
 
   private async finishUp() {
-    return this.reactedEmotes.forEach(reaction => reaction.remove())
+    return this.reactedEmotes.forEach(emote => this.message.reactions.cache.get(emote).remove())
   }
 }
