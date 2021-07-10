@@ -42,11 +42,14 @@ export async function findShip(shipName: string, options?: ParseWikitextOptions)
     const name = page.raw.title
     const url = page.raw.fullurl
 
-    const [info, imageUrls] = await Promise.all([
+    const [info, images] = await Promise.all([
       page.rawInfo().then(rawInfo => parseInfoFromWikitext(rawInfo, options)),
-      page.rawImages().then(images => extractShipImagesFromWikiImages(name, images))
+      page.rawImages()
     ])
     const shipInfo = info.Ship
+    const shipImages = extractShipImagesFromWikiImages(name, images)
+    const skillImages =  extractSkillImagesFromWikiImages(images)
+    
 
     return {
       name,
@@ -59,14 +62,14 @@ export async function findShip(shipName: string, options?: ParseWikitextOptions)
         pixiv: shipInfo.ArtistPixiv,
         twitter: shipInfo.ArtistTwitter
       },
-      images: imageUrls,
+      images: shipImages,
       rarity: shipInfo.Rarity,
       nationality: shipInfo.Nationality,
       shipType: shipInfo.Type,
       class: shipInfo.Class,
       armor: shipInfo.Armor,
       equipments: extractEquipmentsFromInfo(shipInfo),
-      skills: extractSkillsFromInfo(shipInfo)
+      skills: extractSkillsFromInfo(shipInfo, skillImages)
     }
   } catch (e) {
     logger.error('Finding Ship encountered an error', e.stack)

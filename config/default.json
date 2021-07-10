@@ -6,7 +6,8 @@
   },
   "Bot": {
     "Command": {
-      "prefix": "!"
+      "prefix": "!",
+      "reactionWaitTime": 300000
     }
   },
   "Wiki": {

@@ -56,6 +56,7 @@
         "after": true
       }
     ],
-    "no-trailing-spaces": "error"
+    "no-trailing-spaces": "error",
+    "no-misleading-character-class": 0
   }
 }
