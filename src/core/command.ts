@@ -1,9 +1,12 @@
 import Discord, { MessageReaction } from 'discord.js'
+import config from 'config'
 import fs = require('fs')
 import { Logger } from '../utils/logger'
 import { isValidCommand, formatCommandMessage } from '../helpers/command.helper'
 import { Command as CommandType, CommandExecutionResult } from '../types/command'
 import { CommandStatusEmoji } from '../constants/discord.constant'
+
+import defaultCommand = require('../commands/template/default')
 
 export class Command {
   private logger = new Logger(Command.name)
@@ -14,7 +17,7 @@ export class Command {
       const commandFiles = fs.readdirSync('./src/commands').filter(file => file.endsWith('.ts'))
 
       for (const file of commandFiles) {
-        this.logger.log(`Adding command ${file}`)
+        this.logger.log(`Loading command ${file}`)
         try {
           // eslint-disable-next-line @typescript-eslint/no-var-requires
           const command = require(`../commands/${file.split('.')[0]}`)
@@ -24,7 +27,7 @@ export class Command {
             throw commandValid
           }
 
-          this.add(command)
+          this.add({ ...defaultCommand, ...command })
           this.logger.log(`Command ${file} loaded!`)
         }
         catch (e) {
@@ -45,28 +48,43 @@ export class Command {
   }
 
   async execute(message: Discord.Message) {
-    const command = formatCommandMessage(message)
-    if (!this.commandList.has(command.name)) {
-      return this.logger.log(`Command [${command.name}] doesn't exist`)
+    const userCommand = formatCommandMessage(message)
+
+    if (!this.commandList.has(userCommand.name)) {
+      return this.logger.log(`Command [${userCommand.name}] doesn't exist`)
     }
 
-    if (this.commandList.get(command.name).guildOnly && message.channel.type === 'dm') {
-      return this.logger.log(`Command [${command.name}] can't execute inside DMs`)
+    if (this.commandList.get(userCommand.name).guildOnly && message.channel.type === 'dm') {
+      return this.logger.log(`Command [${userCommand.name}] can't execute inside DMs`)
     }
 
-    this.logger.log(`Processing Command ${command.name} from Channel ${message.channel.id} (Server: ${message.guild.id})`)
+    let reply
+    const command = this.commandList.get(userCommand.name)
 
-    const cmd = this.commandList.get(command.name)
+    if (command.args && !userCommand.args.length) {
+      reply = `${message.author} You didn't provide any arguments`
+
+      if (command.usage) {
+        reply += `\nThe proper usage would be: \`${config.get('Bot.Command.prefix')}${command.name} ${command.usage}\``
+      }
+    }
+
+    if (reply) {
+      return message.channel.send(reply)
+    }
+
+    this.logger.log(`Processing Command ${userCommand.name} from Channel ${message.channel.id} (Server: ${message.guild.id})`)
+
     let react: MessageReaction
     try {
-      if (cmd.notifyAuthor) {
+      if (command.notifyAuthor) {
         react = await message.react(CommandStatusEmoji.Processing)
       }
-      const result: CommandExecutionResult = await cmd.execute(message, command.args)
+      const result: CommandExecutionResult = await command.execute(message, userCommand.args)
       if (!result.status) {
-        throw result.error || new Error(`Command [${command.name}] failed to execute`)
+        throw result.error || new Error(`Command [${userCommand.name}] failed to execute`)
       }
-      if (cmd.notifyAuthor) {
+      if (command.notifyAuthor) {
         if (react) {
           await react.remove()
         }
@@ -74,7 +92,7 @@ export class Command {
       }
     } catch (e) {
       this.logger.error(e)
-      if (cmd.notifyAuthor) {
+      if (command.notifyAuthor) {
         if (react) {
           await react.remove()
         }

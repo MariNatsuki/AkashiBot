@@ -1,4 +1,5 @@
 import { CommandExecutionResult, CommandResponseType } from '../types/command'
+import { Message } from 'discord.js'
 import { findShip } from '../module/azurlane-wiki'
 import { WikitextParserOptionsType } from '../types/formatter/formatter'
 import { generateWikitextParseOptions } from '../utils/formatter'
@@ -12,7 +13,9 @@ module.exports = {
   description: 'Find Ship\'s skill on Wiki',
   notifyAuthor: true,
   guildOnly: true,
-  async execute(message, args): Promise<CommandExecutionResult> {
+  args: true,
+  usage: '<ship name>',
+  async execute(message: Message, args: string[]): Promise<CommandExecutionResult> {
     try {
       const ship = await findShip(args.join(' ').trim(), generateWikitextParseOptions(WikitextParserOptionsType.Discord))
       if (!ship) {

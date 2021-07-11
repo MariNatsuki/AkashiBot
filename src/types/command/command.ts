@@ -22,7 +22,7 @@ export interface Command {
   guildOnly?: boolean
   args?: boolean
   usage?: string
-  execute: (message: Discord.Message, args: any) => Promise<CommandExecutionResult>
+  execute: (message: Discord.Message, args: string[]) => Promise<CommandExecutionResult>
 }
 
 export interface CommandExecutionResult {
