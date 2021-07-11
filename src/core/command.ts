@@ -62,7 +62,7 @@ export class Command {
     const command = this.commandList.get(userCommand.name)
 
     if (command.args && !userCommand.args.length) {
-      reply = `${message.author} You didn't provide any arguments`
+      reply = `${message.author} You didn't provide any arguments!`
 
       if (command.usage) {
         reply += `\nThe proper usage would be: \`${config.get('Bot.Command.prefix')}${command.name} ${command.usage}\``
@@ -81,7 +81,7 @@ export class Command {
         react = await message.react(CommandStatusEmoji.Processing)
       }
       const result: CommandExecutionResult = await command.execute(message, userCommand.args)
-      if (!result.status) {
+      if (result && !result.status) {
         throw result.error || new Error(`Command [${userCommand.name}] failed to execute`)
       }
       if (command.notifyAuthor) {

@@ -49,7 +49,6 @@ export async function findShip(shipName: string, options?: ParseWikitextOptions)
     const shipInfo = info.Ship
     const shipImages = extractShipImagesFromWikiImages(name, images)
     const skillImages =  extractSkillImagesFromWikiImages(images)
-    
 
     return {
       name,
