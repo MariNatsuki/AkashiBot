@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node dist/app.js",
     "postinstall": "tsc",
+    "serve": "npm run postinstall && npm run start",
     "watch-node": "nodemon dist/app.js",
     "watch-ts": "tsc -w",
     "deploy": "git push heroku master -f"
