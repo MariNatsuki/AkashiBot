@@ -60,6 +60,7 @@ function generateShipStatsEmbed(shipInfo: ShipInfo): MessageEmbed {
     .setColor(convertRarityToColor(shipInfo.rarity.name))
     .setTitle(shipInfo.name)
     .setURL(shipInfo.url)
+    .setDescription('__**Level 120**__')
     .addFields(
       { name: `${findEmoji(ShipStats.Health)} Health`, value: stats.health, inline: true },
       { name: `${findEmoji(ShipStats.Armor)} Armor`, value: stats.armor, inline: true },

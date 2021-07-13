@@ -18,7 +18,7 @@ export async function initEmojiModule(): Promise<void> {
 export function setEmojiGuild(guild: Guild): void {
   if (guild) {
     emojiGuild = guild
-    logger.log(`Successfully set ${emojiGuild.id} as Emoji Server`)
+    logger.log(`Successfully set ${emojiGuild} <#${emojiGuild.id}> as Emoji Server`)
     cacheEmoji()
   }
 }
