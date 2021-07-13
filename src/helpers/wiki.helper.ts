@@ -1,6 +1,6 @@
 import cejs = require('cejs')
 import { RARITY_HEX_MAP, ShipRarityStars } from '../constants/azurlane-wiki.constant'
-import { Equipment, ShipInfo, Skill } from '../types/azurlane-wiki'
+import { Equipment, ShipInfo, Skill, Stats } from '../types/azurlane-wiki'
 import { LinkType, TemplateTitle } from '../types/wiki'
 import { ParseWikitextOptions, WikitextParserOptionsType } from '../types/formatter'
 import { generateWikitextParseOptions } from '../utils/formatter'
@@ -35,7 +35,28 @@ export function extractShipImagesFromWikiImages(name: string, images: any[]): { 
   }, {})
 }
 
-export function extractEquipmentsFromInfo(shipInfo: any): Equipment[] {
+export function extractStatsFromInfo(shipInfo: Record<string, any>): Stats {
+  return {
+    health: shipInfo['Health120'],
+    armor: shipInfo['Armor'],
+    reload: shipInfo['Reload120'],
+    luck: shipInfo['Luck'],
+    firepower: shipInfo['Fire120'],
+    torpedo: shipInfo['Torp120'],
+    evasion: shipInfo['Evade120'],
+    speed: shipInfo['Speed'],
+    antiAir: shipInfo['AA120'],
+    aviation: shipInfo['Air120'],
+    oilConsumption: shipInfo['Consumption120'],
+    accuracy: shipInfo['Acc120'],
+    aSW: shipInfo['ASW120'],
+    oxygen: shipInfo['Oxygen'],
+    ammunition: shipInfo['Ammo'],
+    huntingRange: shipInfo['Range'],
+  }
+}
+
+export function extractEquipmentsFromInfo(shipInfo: Record<string, any>): Equipment[] {
   const result: Equipment[] = []
   if (typeof shipInfo !== 'object') return result
   let count = 1
@@ -51,7 +72,7 @@ export function extractEquipmentsFromInfo(shipInfo: any): Equipment[] {
   return result
 }
 
-export function extractSkillsFromInfo(shipInfo: any, images = {}): Skill[] {
+export function extractSkillsFromInfo(shipInfo: Record<string, any>, images = {}): Skill[] {
   const result: Skill[] = []
   if (typeof shipInfo !== 'object') return result
   let count = 1
@@ -202,9 +223,31 @@ export function formatShipDataFromDatabase(data: Ship): ShipInfo {
     nationality: data.nationality,
     shipType: data.hullType,
     class: data.class,
-    stats: data.stats?.level120['stats'],
+    stats: extractStatsFromDatabase(data),
     equipments: extractEquipmentsFromDatabase(data),
     skills: extractSkillsFromDatabase(data)
+  }
+}
+
+function extractStatsFromDatabase(data: Ship): Stats {
+  const stats = data.stats.level120
+  return {
+    health: stats['health'],
+    armor: stats['armor'],
+    reload: stats['reload'],
+    luck: stats['luck'],
+    firepower: stats['firepower'],
+    torpedo: stats['torpedo'],
+    evasion: stats['evasion'],
+    speed: stats['speed'],
+    antiAir: stats['antiair'],
+    aviation: stats['aviation'],
+    oilConsumption: stats['oilConsumption'],
+    accuracy: stats['accuracy'],
+    aSW: stats['antisubmarineWarfare'],
+    oxygen: stats['oxygen'],
+    ammunition: stats['ammunition'],
+    huntingRange: stats['huntingRange'],
   }
 }
 

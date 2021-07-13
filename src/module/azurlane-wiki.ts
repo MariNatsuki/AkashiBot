@@ -7,7 +7,9 @@ import {
   extractEquipmentsFromInfo,
   extractShipImagesFromWikiImages,
   extractSkillImagesFromWikiImages,
-  extractSkillsFromInfo, formatShipDataFromDatabase,
+  extractSkillsFromInfo,
+  extractStatsFromInfo,
+  formatShipDataFromDatabase,
   parseInfoFromWikitext
 } from '../helpers/wiki.helper'
 import {
@@ -118,9 +120,7 @@ async function getShipFromWiki(shipName: string, options: ParseWikitextOptions):
     nationality: shipInfo.Nationality,
     shipType: shipInfo.Type,
     class: shipInfo.Class,
-    stats: {
-      armor: shipInfo.Armor
-    },
+    stats: extractStatsFromInfo(shipInfo),
     equipments: extractEquipmentsFromInfo(shipInfo),
     skills: extractSkillsFromInfo(shipInfo, skillImages)
   }

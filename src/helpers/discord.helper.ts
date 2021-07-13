@@ -3,7 +3,9 @@ import { List } from '../classes/list'
 import Discord, { MessageEmbed } from 'discord.js'
 import { EmbedShipPageAlias } from '../types/discord'
 import { convertRarityToColor } from './wiki.helper'
-import { convertShipRarityToEmoji, convertShipTypeToEmoji, convertSkillTypeToEmoji, findEmoji } from './emoji.helper'
+import { findEmoji } from '../module/emoji'
+import { convertShipRarityToEmoji, convertShipTypeToEmoji, convertSkillTypeToEmoji } from './emoji.helper'
+import { ShipStats } from '../constants/emoji.constants'
 
 export function generateShipProfileEmbed(shipInfo: ShipInfo, defaultPageAlias: string): List<MessageEmbed>
 export function generateShipProfileEmbed(shipInfo: ShipInfo, defaultPageIndex: number | string): List<MessageEmbed>
@@ -53,11 +55,31 @@ function generateShipInfoEmbed(shipInfo: ShipInfo): MessageEmbed {
 }
 
 function generateShipStatsEmbed(shipInfo: ShipInfo): MessageEmbed {
-  return new MessageEmbed()
+  const stats = shipInfo.stats
+  const embed = new MessageEmbed()
     .setColor(convertRarityToColor(shipInfo.rarity.name))
     .setTitle(shipInfo.name)
     .setURL(shipInfo.url)
-    .setDescription('*Under Construction...*')
+    .addFields(
+      { name: `${findEmoji(ShipStats.Health)} Health`, value: stats.health, inline: true },
+      { name: `${findEmoji(ShipStats.Armor)} Armor`, value: stats.armor, inline: true },
+      { name: `${findEmoji(ShipStats.Reload)} Reload`, value: stats.reload, inline: true },
+      { name: `${findEmoji(ShipStats.Luck)} Luck`, value: stats.luck, inline: true },
+      { name: `${findEmoji(ShipStats.Firepower)} Firepower`, value: stats.firepower, inline: true },
+      { name: `${findEmoji(ShipStats.Torpedo)} Torpedo`, value: stats.torpedo, inline: true },
+      { name: `${findEmoji(ShipStats.Evasion)} Evasion`, value: stats.evasion, inline: true },
+      { name: `Speed`, value: stats.speed, inline: true },
+      { name: `${findEmoji(ShipStats.AntiAir)} Anti Air`, value: stats.antiAir, inline: true },
+      { name: `${findEmoji(ShipStats.Aviation)} Aviation`, value: stats.aviation, inline: true },
+      { name: `${findEmoji(ShipStats.OilConsumption)} Oil`, value: stats.oilConsumption, inline: true },
+      { name: `${findEmoji(ShipStats.Accuracy)} Accuracy`, value: stats.accuracy, inline: true },
+      { name: `${findEmoji(ShipStats.ASW)} ASW`, value: stats.aSW, inline: true }
+    )
+  if (stats.oxygen) embed.addField(`${findEmoji(ShipStats.Oxygen)} Oxygen`, stats.oxygen, true)
+  if (stats.ammunition) embed.addField(`${findEmoji(ShipStats.Ammunition)} Ammunition`, stats.ammunition, true)
+  if (shipInfo.images.icon) embed.setThumbnail(shipInfo.images.icon)
+
+  return embed
 }
 
 function generateShipSkillEmbed(shipInfo: ShipInfo): MessageEmbed[] {

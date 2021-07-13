@@ -1,3 +1,5 @@
+export type Emojis = ShipType | ShipRarity | ShipStats | SkillType
+
 export enum ShipType {
   Destroyer = 'DD',
   LightCruiser = 'CL',
@@ -23,6 +25,24 @@ export enum ShipRarity {
   Elite = 'Rarity_E',
   Rare = 'Rarity_R',
   Normal = 'Rarity_N'
+}
+
+export enum ShipStats {
+  Health = 'Health',
+  Armor = 'Armor',
+  Reload = 'Reload',
+  Luck = 'Luck',
+  Firepower = 'Firepower',
+  Torpedo = 'Torpedo',
+  Evasion = 'Evasion',
+  AntiAir = 'AntiAir',
+  Aviation = 'Aviation',
+  OilConsumption = 'OilConsumption',
+  Accuracy = 'Accuracy',
+  ASW = 'ASW',
+  Oxygen = 'Oxygen',
+  Ammunition = 'Ammunition',
+  HuntingRange = 'HuntingRange',
 }
 
 export enum SkillType {

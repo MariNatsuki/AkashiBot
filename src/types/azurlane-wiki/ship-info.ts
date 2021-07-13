@@ -37,7 +37,22 @@ export interface Rarity {
 }
 
 export interface Stats {
+  health: string
   armor: string
+  reload: string
+  luck: string
+  firepower: string
+  torpedo: string
+  evasion: string
+  speed: string
+  antiAir: string
+  aviation: string
+  oilConsumption: string
+  accuracy: string
+  aSW: string
+  oxygen: string
+  ammunition: string
+  huntingRange: string
 }
 
 export interface Skill {
