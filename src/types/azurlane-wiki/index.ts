@@ -1,1 +1,2 @@
-export * from './azurlane-wiki'
+export * from './ship-list'
+export * from './ship-info'

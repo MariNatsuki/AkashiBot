@@ -2,7 +2,7 @@
   "name": "discord-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/app.js",
+  "main": "dist/bot.js",
   "scripts": {
     "start": "node dist/app.js",
     "postinstall": "tsc",
@@ -14,6 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@azurapi/azurapi": "^1.0.3",
     "@discordjs/opus": "^0.4.0",
     "axios": "^0.21.1",
     "bufferutil": "^4.0.3",
@@ -22,7 +23,10 @@
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "erlpack": "github:discord/erlpack",
+    "fuse.js": "^6.4.6",
     "header-generator": "^1.0.0",
+    "latinize": "^0.5.0",
+    "node-html-parser": "^4.0.0",
     "sodium": "^3.0.2",
     "to-words": "^2.3.2",
     "ts-interface-checker": "^0.2.1",

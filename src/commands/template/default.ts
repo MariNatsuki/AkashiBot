@@ -2,6 +2,7 @@ import { Message } from 'discord.js'
 
 module.exports = {
   name: '',                             // Command's name, used together with prefix to trigger this command via discord message
+  aliases: [],                          // Command aliases, allow command to be triggered by multiple word
   description: '',                      // Displayed to end user when using command <prefix>describe
   notifyAuthor: false,                  // React to author's command message about this command's progress (processing, done, failed)
   guildOnly: true,                      // Only allow this command to be used inside servers (Direct Message is prohibited)

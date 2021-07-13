@@ -20,7 +20,9 @@ export class Bot {
   }
 
   private initDiscordClient() {
-    const client = new Discord.Client()
+    const client = new Discord.Client({
+      restTimeOffset: 50
+    })
     this.client = client
     client.on('ready', () => {
       this.logger.log(`Logged in as ${client.user.tag}!`)

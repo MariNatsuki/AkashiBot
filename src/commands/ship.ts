@@ -1,15 +1,16 @@
 import { CommandExecutionResult, CommandResponseType } from '../types/command'
-import { Message } from 'discord.js'
+import { Message } from '../types/command/message'
 import { EmbedShipPageAlias } from '../types/discord'
 import { findShip } from '../module/azurlane-wiki'
 import { generateWikitextParseOptions } from '../utils/formatter'
-import { WikitextParserOptionsType } from '../types/formatter/formatter'
+import { WikitextParserOptionsType } from '../types/formatter'
 import { generateGenericCommandResponse } from '../helpers/command.helper'
 import { generateShipProfileEmbed } from '../helpers/discord.helper'
 import { PaginateEmbed } from '../classes/paginate-embed'
 
 module.exports = {
   name: 'ship',
+  aliases: ['info', 'stats', 'skill'],
   description: 'Find Ship on Wiki',
   notifyAuthor: true,
   guildOnly: true,
@@ -23,9 +24,16 @@ module.exports = {
         return
       }
       const shipEmbedList = generateShipProfileEmbed(ship, EmbedShipPageAlias.Info)
+      switch (message.command.name) {
+        case 'stats':
+          shipEmbedList.goToPageByAlias(EmbedShipPageAlias.Stats)
+          break
+        case 'skill':
+          shipEmbedList.goToPageByAlias(`${EmbedShipPageAlias.Skill} 1`)
+          break
+      }
 
-      message.reply(shipEmbedList.currentPage())
-        .then(async replied => new PaginateEmbed(replied, shipEmbedList).start())
+      await new PaginateEmbed(message, shipEmbedList).reply()
 
       return { status: true }
     } catch (e) {

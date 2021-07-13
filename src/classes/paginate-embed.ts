@@ -1,7 +1,7 @@
 import config from 'config'
 import { ToWords } from 'to-words'
 import { List } from './list'
-import { Message, MessageEmbed, MessageReaction } from 'discord.js'
+import { Message, MessageEmbed } from 'discord.js'
 import { UnicodeEmoji } from '../constants/discord.constant'
 import { Logger } from '../utils/logger'
 
@@ -28,6 +28,7 @@ export class PaginateEmbed {
   private waitTime = config.get('Bot.Command.reactionWaitTime', 15000)
   private reactedEmotes: string[] = []
   private isProcessing = false
+  private replied: Message
 
   constructor(
     private readonly message: Message,
@@ -38,31 +39,29 @@ export class PaginateEmbed {
     this.waitTime = time
   }
 
-  async start(waitTime?: number): Promise<void> {
+  async reply(waitTime?: number): Promise<void> {
+    this.replied = await this.message.reply(this.embedList.currentPage())
     await this.reactPaginationEmotes()
     await this.startCollector(waitTime)
-
   }
 
   private async reactPaginationEmotes() {
-    await this.message.react(UnicodeEmoji.ArrowLeft)
-    await this.message.react(UnicodeEmoji.ArrowRight)
+    await this.replied.react(UnicodeEmoji.ArrowLeft)
+    await this.replied.react(UnicodeEmoji.ArrowRight)
     this.reactedEmotes.push(UnicodeEmoji.ArrowLeft, UnicodeEmoji.ArrowRight)
     const pageCount = this.embedList.length
     const toWords = new ToWords()
     for (let i = 1; i <= pageCount; i++) {
-      this.reactedEmotes.push((await this.message.react(UnicodeEmoji[toWords.convert(i)])).emoji.name)
+      this.reactedEmotes.push((await this.replied.react(UnicodeEmoji[toWords.convert(i)])).emoji.name)
     }
   }
 
   private async startCollector(waitTime: number) {
-    const filter = (reaction, user) => {
-      return (pageNavigationEmotes.includes(reaction.emoji.name)
-        || pageSelectionEmotes.includes(reaction.emoji.name))
-        && user.id !== this.message.author.id
-    }
+    const filter = (reaction, user) => (pageNavigationEmotes.includes(reaction.emoji.name)
+      || pageSelectionEmotes.includes(reaction.emoji.name))
+      && user.id !== this.replied.author.id
 
-    const collector = this.message.createReactionCollector(filter, { time: waitTime || this.waitTime, dispose: true })
+    const collector = this.replied.createReactionCollector(filter, { time: waitTime || this.waitTime, dispose: true })
 
     collector.on('collect', this.handleReaction.bind(this))
 
@@ -88,7 +87,7 @@ export class PaginateEmbed {
         default:
           this.embedList.goToPage(pageSelectionEmotes.findIndex(item => item === reaction.emoji.name))
       }
-      await this.message.edit(this.embedList.currentPage())
+      await this.replied.edit(this.embedList.currentPage())
     }
     catch (e) {
       this.logger.error('Error encountered', e.stack)
@@ -99,6 +98,6 @@ export class PaginateEmbed {
   }
 
   private async finishUp() {
-    return this.reactedEmotes.forEach(emote => this.message.reactions.cache.get(emote).remove())
+    return this.reactedEmotes.forEach(emote => this.replied.reactions.cache.get(emote).remove())
   }
 }

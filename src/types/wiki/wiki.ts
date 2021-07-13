@@ -6,6 +6,7 @@ type ArgumentTypes<F extends () => void> = F extends (...args: infer A) => any ?
 export type WikiArguments = ArgumentTypes<typeof WikiJs>
 
 export interface Wiki extends Omit<ReturnType<typeof WikiJs>, 'find'> {
+  api?(params?): Promise<any>
   find(query: string, predicate?: (pages: Page[]) => Page): Promise<Page>
 }
 

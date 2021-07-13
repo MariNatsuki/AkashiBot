@@ -2,6 +2,7 @@ import Discord from 'discord.js'
 import config from 'config'
 import { createCheckers } from 'ts-interface-checker'
 import { CommandResponseType, exportedTypeSuite } from '../types/command'
+import { Message } from '../types/command/message'
 
 export function isCommand(message: Discord.Message): boolean {
   const botConfig = config.get('Bot.Command')
@@ -16,13 +17,13 @@ export function generateGenericCommandResponse(type: CommandResponseType): strin
   }
 }
 
-export function formatCommandMessage(message: Discord.Message): { name: string, args: string[] } {
+export function formatCommandMessage(message: Message): Message {
   const botConfig = config.get('Bot.Command')
 
   const args = message.content.slice(botConfig.prefix.length).trim().split(/ +/)
-  const name = args.shift().toLowerCase()
+  message.command = { name: args.shift().toLowerCase(), args }
 
-  return { name, args }
+  return message
 }
 
 export function isValidCommand(command: any): boolean | Record<string, unknown> {

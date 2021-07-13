@@ -1,6 +1,7 @@
 import config from 'config'
-import { ParseWikitextOptions, WikitextParserOptionsType } from '../types/formatter/formatter'
+import { ParseWikitextOptions, WikitextParserOptionsType } from '../types/formatter'
 import { LinkType } from '../types/wiki'
+import { Url } from '../types/formatter'
 
 export function generateWikitextParseOptions(type: WikitextParserOptionsType): ParseWikitextOptions {
   switch (type) {
@@ -21,8 +22,8 @@ const defaultParseWikitextOptions: ParseWikitextOptions = {
 }
 
 const discordParseWikitextOptions: ParseWikitextOptions = {
-  formatLink(text: string, outputUrl: string, type?: LinkType) {
-    const finalUrl = (() => {
+  formatLink(text: string, outputUrl: string, type?: LinkType): Url {
+    const url = (() => {
       switch (type) {
         case LinkType.Internal:
           return `${config.get('Wiki.Detail.url.main').replace(new RegExp('[/]+$'), '')}/${outputUrl}`
@@ -32,7 +33,7 @@ const discordParseWikitextOptions: ParseWikitextOptions = {
           return outputUrl
       }
     })()
-    return `[${text}](${finalUrl})`
+    return { text, url }
   },
   formatNotation(text: string, notation: string) {
     return `__${text}__ \`${notation}\``

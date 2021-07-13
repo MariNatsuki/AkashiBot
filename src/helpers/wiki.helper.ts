@@ -1,9 +1,12 @@
-import { RARITY_HEX_MAP } from '../constants/wiki.constant'
-import { Equipment, Skill } from '../types/azurlane-wiki'
-import { LinkType, TemplateTitle } from '../types/wiki'
-import { ParseWikitextOptions, WikitextParserOptionsType } from '../types/formatter/formatter'
-import { generateWikitextParseOptions } from '../utils/formatter'
 import cejs = require('cejs')
+import { RARITY_HEX_MAP, ShipRarityStars } from '../constants/azurlane-wiki.constant'
+import { Equipment, ShipInfo, Skill } from '../types/azurlane-wiki'
+import { LinkType, TemplateTitle } from '../types/wiki'
+import { ParseWikitextOptions, WikitextParserOptionsType } from '../types/formatter'
+import { generateWikitextParseOptions } from '../utils/formatter'
+import { Ship } from '@azurapi/azurapi/build/types/ship'
+import { SkillType } from '../constants/emoji.constants'
+import { SkillColorToTypeMap } from '../constants/database.constant'
 
 cejs.run('application.net.wiki')
 
@@ -171,4 +174,62 @@ function parseTooltip(value: any): { text: string, tooltip: string } {
 
 export function convertRarityToColor(rarity: string): string {
   return RARITY_HEX_MAP[rarity] || '#000000'
+}
+
+export function formatShipDataFromDatabase(data: Ship): ShipInfo {
+  return {
+    name: data.names.en,
+    url: data.wikiUrl,
+    description: '',
+    va: {
+      name: data.misc.voice?.name,
+      url: data.misc.voice?.url,
+    },
+    artist: {
+      name: data.misc?.artist?.name,
+      link: data.misc?.artist?.url,
+      pixiv: data.misc?.pixiv?.url,
+      twitter: data.misc?.twitter?.url
+    },
+    images: {
+      icon: data.thumbnail,
+      portrait: data.skins[0]?.image
+    },
+    rarity: {
+      name: data.rarity,
+      stars: data.stars?.stars
+    },
+    nationality: data.nationality,
+    shipType: data.hullType,
+    class: data.class,
+    stats: data.stats?.level120['stats'],
+    equipments: extractEquipmentsFromDatabase(data),
+    skills: extractSkillsFromDatabase(data)
+  }
+}
+
+function extractEquipmentsFromDatabase(data: Ship): Equipment[] {
+  return data.slots.map(slot => ({
+    type: slot?.type,
+    efficiencyMin: slot?.minEfficiency?.toString(),
+    efficiencyMax: slot?.maxEfficiency?.toString(),
+    quantity: slot['max']
+  }))
+}
+
+function extractSkillsFromDatabase(data: Ship): Skill[] {
+  return data.skills.map(skill => ({
+    name: skill?.names?.en,
+    type: mapSkillColorWithType(skill?.color),
+    description: skill?.description,
+    image: skill?.icon
+  }))
+}
+
+function mapSkillColorWithType(color: string): SkillType {
+  return SkillColorToTypeMap[color]
+}
+
+export function convertShipRarityToStars(rarity: string): ShipRarityStars {
+  return ShipRarityStars[rarity.replace(/ /g, '')]
 }

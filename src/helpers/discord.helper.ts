@@ -33,30 +33,28 @@ export function generateShipProfileEmbed(shipInfo: ShipInfo, defaultPageParam: n
 
 function generateShipInfoEmbed(shipInfo: ShipInfo): MessageEmbed {
   const embed = new MessageEmbed()
-    .setColor(convertRarityToColor(shipInfo.rarity))
+    .setColor(convertRarityToColor(shipInfo.rarity.name))
     .setTitle(shipInfo.name)
     .setURL(shipInfo.url)
     .addFields(
-      { name: '> Rarity', value: `${findEmoji(convertShipRarityToEmoji(shipInfo.rarity))} ${shipInfo.rarity}` },
-      { name: '> Voice Actress', value: shipInfo.va, inline: true },
-      { name: '> Artist', value: shipInfo.artist.link || shipInfo.artist.name, inline: true },
+      { name: '> Rarity', value: `${findEmoji(convertShipRarityToEmoji(shipInfo.rarity.name))} ${shipInfo.rarity.name} (${shipInfo.rarity.stars})` },
+      { name: '> Voice Actress', value: formatUrl(shipInfo.va.name, shipInfo.va.url), inline: true },
+      { name: '> Artist', value: formatUrl(shipInfo.artist.name, shipInfo.artist?.link), inline: true },
       { name: '> Type', value: `${findEmoji(convertShipTypeToEmoji(shipInfo.shipType))} ${shipInfo.shipType}` },
       { name: '> Faction', value: shipInfo.nationality, inline: true },
       { name: '> Class', value: shipInfo.class, inline: true },
     )
   if (shipInfo.images.icon) embed.setThumbnail(shipInfo.images.icon)
   if (shipInfo.equipments.length) {
-    embed.addField('> Equipments', shipInfo.equipments.reduce((result, equipmentInfo) => {
-      result += `**•** **${equipmentInfo.type}** (${equipmentInfo.quantity}) (${equipmentInfo.efficiencyMin} -> ${equipmentInfo.efficiencyMax})\n`
-      return result
-    }, ''))
+    embed.addField('> Equipments', shipInfo.equipments.reduce((result, equipmentInfo) =>
+      result += `**•** **${equipmentInfo.type}** (${equipmentInfo.quantity}) (${equipmentInfo.efficiencyMin} -> ${equipmentInfo.efficiencyMax})\n`, ''))
   }
   return embed
 }
 
 function generateShipStatsEmbed(shipInfo: ShipInfo): MessageEmbed {
   return new MessageEmbed()
-    .setColor(convertRarityToColor(shipInfo.rarity))
+    .setColor(convertRarityToColor(shipInfo.rarity.name))
     .setTitle(shipInfo.name)
     .setURL(shipInfo.url)
     .setDescription('*Under Construction...*')
@@ -64,11 +62,15 @@ function generateShipStatsEmbed(shipInfo: ShipInfo): MessageEmbed {
 
 function generateShipSkillEmbed(shipInfo: ShipInfo): MessageEmbed[] {
   return shipInfo.skills.map(skill => new Discord.MessageEmbed()
-    .setColor(convertRarityToColor(shipInfo.rarity))
+    .setColor(convertRarityToColor(shipInfo.rarity.name))
     .setTitle(shipInfo.name)
     .setURL(shipInfo.url)
     .setDescription(`__**${skill.name}**__`)
     .setThumbnail(skill.image)
     .addField('> Type', `${findEmoji(convertSkillTypeToEmoji(skill.type))} ${skill.type}`)
     .addField('> Description', skill.description))
+}
+
+function formatUrl(text: string, url: string): string {
+  return url ? `[${text}](${url})` : text
 }

@@ -3,12 +3,13 @@ import Discord from 'discord.js'
 
 const Command = t.iface([], {
   'name': 'string',
+  'aliases': t.opt(t.array('string')),
   'description': t.opt('string'),
   'notifyAuthor': t.opt('boolean'),
   'guildOnly': t.opt('boolean'),
   'args': t.opt('boolean'),
   'usage': t.opt('string'),
-  'execute': t.func('CommandExecutionResult', t.param('message', 'Discord.Message'), t.param('args', 'any')),
+  'execute': t.func('CommandExecutionResult', t.param('message', 'Discord.Message'), t.param('args', t.array('string'))),
 })
 
 export const exportedTypeSuite: t.ITypeSuite = {
@@ -17,6 +18,7 @@ export const exportedTypeSuite: t.ITypeSuite = {
 
 export interface Command {
   name: string
+  aliases?: string[]
   description?: string
   notifyAuthor? :boolean
   guildOnly?: boolean

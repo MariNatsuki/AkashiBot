@@ -40,6 +40,10 @@ export class Command {
   }
 
   add(command: any) {
+    if (this.commandList.has(command.name)) {
+      this.logger.warn(`Cannot add command "${command.name}" because it's name is conflicted with another command!`)
+      return
+    }
     this.commandList.set(command.name, command)
   }
 
@@ -48,18 +52,18 @@ export class Command {
   }
 
   async execute(message: Discord.Message) {
-    const userCommand = formatCommandMessage(message)
+    const userCommand = formatCommandMessage(message).command
+    const command = this.commandList.get(userCommand.name)
+      || this.commandList.find(cmd => cmd.aliases && cmd.aliases.includes(userCommand.name))
+    let reply
 
-    if (!this.commandList.has(userCommand.name)) {
+    if (!command) {
       return this.logger.log(`Command [${userCommand.name}] doesn't exist`)
     }
 
-    if (this.commandList.get(userCommand.name).guildOnly && message.channel.type === 'dm') {
+    if (command.guildOnly && message.channel.type === 'dm') {
       return this.logger.log(`Command [${userCommand.name}] can't execute inside DMs`)
     }
-
-    let reply
-    const command = this.commandList.get(userCommand.name)
 
     if (command.args && !userCommand.args.length) {
       reply = `${message.author} You didn't provide any arguments!`
@@ -73,30 +77,24 @@ export class Command {
       return message.channel.send(reply)
     }
 
-    this.logger.log(`Processing Command ${userCommand.name} from Channel ${message.channel.id} (Server: ${message.guild.id})`)
+    this.logger.log(`Processing Command "${userCommand.name}" from Channel ${message.channel} - Server: ${message.guild} <#${message.guild.id}>`)
 
     let react: MessageReaction
     try {
       if (command.notifyAuthor) {
-        react = await message.react(CommandStatusEmoji.Processing)
+        message.react(CommandStatusEmoji.Processing).then(re => react = re)
       }
       const result: CommandExecutionResult = await command.execute(message, userCommand.args)
       if (result && !result.status) {
         throw result.error || new Error(`Command [${userCommand.name}] failed to execute`)
       }
       if (command.notifyAuthor) {
-        if (react) {
-          await react.remove()
-        }
-        react = await message.react(CommandStatusEmoji.Done)
+        react?.remove() && message.react(CommandStatusEmoji.Done).then(re => react = re)
       }
     } catch (e) {
       this.logger.error(e)
       if (command.notifyAuthor) {
-        if (react) {
-          await react.remove()
-        }
-        await message.react(CommandStatusEmoji.Failed)
+        react?.remove() && message.react(CommandStatusEmoji.Failed).then(re => react = re)
       }
     }
   }
