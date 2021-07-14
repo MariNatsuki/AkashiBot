@@ -7,6 +7,8 @@ import { generateWikitextParseOptions } from '../utils/formatter'
 import { Ship } from '@azurapi/azurapi/build/types/ship'
 import { SkillType } from '../constants/emoji.constants'
 import { SkillColorToTypeMap } from '../constants/database.constant'
+import { Barrage } from '@azurapi/azurapi/build/types/barrage'
+import { BarrageInfo, Round } from '../types/azurlane-wiki/barrage'
 
 cejs.run('application.net.wiki')
 
@@ -271,6 +273,16 @@ function extractSkillsFromDatabase(data: Ship): Skill[] {
 
 function mapSkillColorWithType(color: string): SkillType {
   return SkillColorToTypeMap[color]
+}
+
+export function formatBarrageDataFromDatabase(ship: string, data: Barrage): BarrageInfo {
+  return {
+    name: data['name'],
+    ship,
+    icon: data['icon'],
+    image: data['image'],
+    rounds: data['rounds'],
+  }
 }
 
 export function convertShipRarityToStars(rarity: string): ShipRarityStars {

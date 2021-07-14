@@ -29,6 +29,7 @@ export class PaginateEmbed {
   private reactedEmotes: string[] = []
   private isProcessing = false
   private replied: Message
+  private isDisplayPageNumber = false
 
   constructor(
     private readonly message: Message,
@@ -39,16 +40,25 @@ export class PaginateEmbed {
     this.waitTime = time
   }
 
+  setDisplayPageNumber(isDisplay: boolean) {
+    this.isDisplayPageNumber = isDisplay
+  }
+
   async reply(replied?: Promise<Message>, waitTime?: number): Promise<void> {
     this.replied = await (await replied)?.edit('', this.embedList.currentPage()) || await this.message.reply(this.embedList.currentPage())
-    await this.reactPaginationEmotes()
-    await this.startCollector(waitTime)
+    if (this.embedList.length > 1) {
+      await this.reactPaginationEmotes()
+      await this.startCollector(waitTime)
+    }
   }
 
   private async reactPaginationEmotes() {
     await this.replied.react(UnicodeEmoji.ArrowLeft)
     await this.replied.react(UnicodeEmoji.ArrowRight)
     this.reactedEmotes.push(UnicodeEmoji.ArrowLeft, UnicodeEmoji.ArrowRight)
+    if (!this.isDisplayPageNumber) {
+      return
+    }
     const pageCount = this.embedList.length
     const toWords = new ToWords()
     for (let i = 1; i <= pageCount; i++) {

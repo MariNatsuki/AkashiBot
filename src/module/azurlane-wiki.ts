@@ -8,18 +8,20 @@ import {
   extractShipImagesFromWikiImages,
   extractSkillImagesFromWikiImages,
   extractSkillsFromInfo,
-  extractStatsFromInfo,
+  extractStatsFromInfo, formatBarrageDataFromDatabase,
   formatShipDataFromDatabase,
   parseInfoFromWikitext
 } from '../helpers/wiki.helper'
 import {
   searchShip as searchShipInDatabase,
-  getShip as getShipFromDatabase
+  getShip as getShipFromDatabase,
+  getBarrage as getBarrageFromDatabase,
 } from '../core/database'
 import { ParseWikitextOptions } from '../types/formatter'
 import HeaderGenerator = require('header-generator')
 import { parse } from 'node-html-parser'
 import { ShipListNormalGroupTemplate, ShipListRetrofittedTemplate } from '../constants/azurlane-wiki.constant'
+import { BarrageInfo } from '../types/azurlane-wiki/barrage'
 
 const logger = new Logger('AzurLaneWikiModule')
 
@@ -155,4 +157,13 @@ async function searchShip(shipName: string) {
     return null
   }
   return search.results[0]
+}
+
+export async function findBarrage(shipName: string, options?: ParseWikitextOptions): Promise<BarrageInfo[]> {
+  const search = await searchShipInDatabase(shipName)
+  if (!search) {
+    return null
+  }
+
+  return (await getBarrageFromDatabase(search)).map(barrage => formatBarrageDataFromDatabase(search, barrage))
 }

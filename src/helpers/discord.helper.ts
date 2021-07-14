@@ -6,9 +6,10 @@ import { convertRarityToColor } from './wiki.helper'
 import { findEmoji } from '../module/emoji'
 import { convertShipRarityToEmoji, convertShipTypeToEmoji, convertSkillTypeToEmoji } from './emoji.helper'
 import { ShipStats } from '../constants/emoji.constants'
+import { BarrageInfo } from '../types/azurlane-wiki/barrage'
 
 export function generateShipProfileEmbed(shipInfo: ShipInfo, defaultPageAlias: string): List<MessageEmbed>
-export function generateShipProfileEmbed(shipInfo: ShipInfo, defaultPageIndex: number | string): List<MessageEmbed>
+export function generateShipProfileEmbed(shipInfo: ShipInfo, defaultPageIndex: number): List<MessageEmbed>
 export function generateShipProfileEmbed(shipInfo: ShipInfo, defaultPageParam: number | string = 0): List<MessageEmbed> {
   const embedList = new List<MessageEmbed>()
     .addPage(generateShipInfoEmbed(shipInfo), EmbedShipPageAlias.Info)
@@ -92,6 +93,35 @@ function generateShipSkillEmbed(shipInfo: ShipInfo): MessageEmbed[] {
     .setThumbnail(skill.image)
     .addField('> Type', `${findEmoji(convertSkillTypeToEmoji(skill.type))} ${skill.type}`)
     .addField('> Description', skill.description))
+}
+
+export function generateBarrageEmbed(barrages: BarrageInfo[], defaultPageAlias: string): List<MessageEmbed>
+export function generateBarrageEmbed(barrages: BarrageInfo[], defaultPageIndex: number): List<MessageEmbed>
+export function generateBarrageEmbed(barrages: BarrageInfo[], defaultPageParam: number | string = 0): List<MessageEmbed> {
+  const embedList = new List<MessageEmbed>()
+  barrages.forEach((barrage, key) => {
+    const embed = new MessageEmbed()
+      .setTitle(barrage.ship)
+      .setDescription(`__**${barrage.name}**__\n*Values listed below assume the entire barrage hits an enemy.*`)
+      .setColor('#eb1333')
+      .setThumbnail(barrage.icon)
+      .setFooter(`Page ${key + 1} of ${barrages.length}`)
+    if (barrage.image) {
+      embed.setImage(barrage.image)
+    }
+    barrage.rounds?.forEach(round => {
+      embed.addFields([
+        { name: `> Ammo Type: \`${round.type}\``, value: 'Damage Vs.' },
+        { name: 'Light Armor', value: round.dmgL, inline: true },
+        { name: 'Medium Armor', value: round.dmgM, inline: true },
+        { name: 'Heavy Armor', value: round.dmgH, inline: true },
+        ...(round.note ? [{ name: 'Note', value: round.note }] : []),
+      ])
+    })
+    embedList.addPage(embed)
+  })
+
+  return embedList
 }
 
 function formatUrl(text: string, url: string): string {

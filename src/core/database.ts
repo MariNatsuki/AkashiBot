@@ -6,6 +6,7 @@ import { AzurAPI } from '@azurapi/azurapi'
 import Fuse from 'fuse.js'
 import { normalizeShipName } from '../helpers/database.helper'
 import { Ship } from '@azurapi/azurapi/build/types/ship'
+import { Barrage } from '@azurapi/azurapi/build/types/barrage'
 
 const logger = new Logger('Database')
 const localDatabase: Database = JSON.parse(JSON.stringify(DefaultDatabase))
@@ -63,4 +64,8 @@ export function searchShip(name: string): string {
 
 export function getShip(name: string): Ship {
   return azurClient.ships.name(name)
+}
+
+export function getBarrage(name: string): Barrage[] {
+  return azurClient.barrages.filter(barrage => barrage.ships.includes(name))
 }
