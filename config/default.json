@@ -22,5 +22,10 @@
         "url": "https://www.wikipedia.org/wiki"
       }
     }
+  },
+  "Schedule": {
+    "Cron": {
+      "updateDatabase": "0 0 * * *"
+    }
   }
 }

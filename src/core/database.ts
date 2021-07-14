@@ -17,9 +17,8 @@ let azurClient
 export async function initializeDatabase(): Promise<void> {
   logger.log('Initializing Database...')
   try {
-    await fetchShipNameList()
+    await updateShipNameCache()
     initializeAzurAPIClient()
-    initializeFuseClients()
     logger.log('Database Initialized!')
   }
   catch (e) {
@@ -51,6 +50,11 @@ function initializeFuseClients() {
   }
   normalShipNameIndex = new Fuse(localDatabase.shipNameList.normal, shipNameOptions)
   retrofittedShipNameIndex = new Fuse(localDatabase.shipNameList.retrofitted, shipNameOptions)
+}
+
+export async function updateShipNameCache(): Promise<void> {
+  await fetchShipNameList()
+  initializeFuseClients()
 }
 
 export function searchShip(name: string): string {

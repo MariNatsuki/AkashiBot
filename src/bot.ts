@@ -1,12 +1,14 @@
 import * as dotenv from 'dotenv'
 import { Bot } from './core/bot'
 import { initializeDatabase } from './core/database'
-import { initEmojiModule } from './module/emoji'
+import { initializeEmojiModule } from './module/emoji'
+import { initializeSchedule } from './schedule/schedule'
 
 dotenv.config()
 Promise.all([
   initializeDatabase(),
-  initEmojiModule()
+  initializeEmojiModule(),
+  initializeSchedule()
 ]).then(() => new Bot())
 
 

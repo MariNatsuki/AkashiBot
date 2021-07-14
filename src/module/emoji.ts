@@ -7,7 +7,7 @@ const logger = new Logger('EmojiCacheModule')
 let emojiGuild: Guild
 const emojiCache: { [emojiName: string]: string } = {}
 
-export async function initEmojiModule(): Promise<void> {
+export async function initializeEmojiModule(): Promise<void> {
   logger.log('Initializing Emoji Module...')
 
   cacheEmoji()
