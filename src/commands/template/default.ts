@@ -5,6 +5,7 @@ module.exports = {
   name: '',                             // Command's name, used together with prefix to trigger this command via discord message
   aliases: [],                          // Command aliases, allow command to be triggered by multiple word
   description: '',                      // Displayed to end user when using command <prefix>describe
+  cooldown: 5000,                       // Cooldown for command in milliseconds
   notifyAuthor: false,                  // Enable posting/editing bot message based on command processing status
   notificationCallback: {               // Callback function to be used when notifyAuthor = true
     preprocess(message: Message, replied?: Promise<Message>): Promise<Message> {

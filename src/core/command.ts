@@ -1,16 +1,16 @@
-import Discord from 'discord.js'
+import { Message, Collection } from 'discord.js'
 import config from 'config'
 import fs = require('fs')
 import { Logger } from '../utils/logger'
 import { isValidCommand, formatCommandMessage } from '../helpers/command.helper'
 import { Command as CommandType, CommandExecutionResult } from '../types/command'
-import { CommandStatusEmoji } from '../constants/discord.constant'
 
 import defaultCommand = require('../commands/template/default')
 
 export class Command {
   private logger = new Logger(Command.name)
-  private commandList = new Discord.Collection<string, CommandType>()
+  private commandList = new Collection<string, CommandType>()
+  private cooldownList = new Collection<string, Collection<string, number>>()
 
   constructor() {
     try {
@@ -51,10 +51,11 @@ export class Command {
     return this.commandList.delete(commandName)
   }
 
-  async execute(message: Discord.Message) {
+  async execute(message: Message) {
     const userCommand = formatCommandMessage(message).command
     const command = this.commandList.get(userCommand.name)
       || this.commandList.find(cmd => cmd.aliases && cmd.aliases.includes(userCommand.name))
+
     let reply
 
     if (!command) {
@@ -63,6 +64,11 @@ export class Command {
 
     if (command.guildOnly && message.channel.type === 'dm') {
       return this.logger.log(`Command [${userCommand.name}] can't execute inside DMs`)
+    }
+
+    const timeOnCooldown = this.isCommandOnCooldown(message.author.id, command.name, command.cooldown)
+    if (timeOnCooldown > 0) {
+      return message.channel.send(`${message.author} Please wait ${Math.round(timeOnCooldown / 1000)} second(s) before reusing this command!`)
     }
 
     if (command.args && !userCommand.args.length) {
@@ -79,7 +85,7 @@ export class Command {
 
     this.logger.log(`Processing Command "${userCommand.name}" from Channel ${message.channel} - Server: ${message.guild} <#${message.guild.id}>`)
 
-    let replied: Promise<Discord.Message>
+    let replied: Promise<Message>
     let result: CommandExecutionResult
     try {
       replied = command.notifyAuthor ? command.notificationCallback?.preprocess?.apply(this, [message]) : undefined
@@ -93,5 +99,20 @@ export class Command {
       this.logger.error(e)
       command.notifyAuthor && command.notificationCallback?.failed?.apply(this, [message, replied, result])
     }
+  }
+
+  private isCommandOnCooldown(authorId: string, command: string, cooldown: number): number {
+    if (!this.cooldownList.has(command)) {
+      this.cooldownList.set(command, new Collection<string, number>())
+    }
+
+    const now = Date.now()
+    const timestamps = this.cooldownList.get(command)
+    const timeLeft = timestamps.get(authorId) + cooldown - now
+    if (timeLeft >= 0) {
+      return timeLeft
+    }
+    timestamps.set(authorId, now)
+    return 0
   }
 }

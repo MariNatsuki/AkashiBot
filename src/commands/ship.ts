@@ -12,6 +12,7 @@ module.exports = {
   name: 'ship',
   aliases: ['info', 'stats', 'skill'],
   description: 'Find Ship on Wiki',
+  cooldown: 10000,
   notifyAuthor: true,
   notificationCallback: {
     preprocess(message: Message, replied?: Promise<Message>): Promise<Message> {

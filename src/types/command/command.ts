@@ -20,6 +20,7 @@ export interface Command {
   name: string
   aliases?: string[]
   description?: string
+  cooldown?: number
   notifyAuthor? :boolean
   notificationCallback?: NotificationCallback
   guildOnly?: boolean
