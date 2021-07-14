@@ -13,7 +13,7 @@ export function isCommand(message: Discord.Message): boolean {
 export function generateGenericCommandResponse(type: CommandResponseType): string {
   switch (type) {
     case CommandResponseType.Fail:
-      return 'There was an error handling your command.'
+      return "Your command failed to process, please check if it's in correct format and try again!"
   }
 }
 

@@ -1,4 +1,4 @@
-import Discord, { MessageReaction } from 'discord.js'
+import Discord from 'discord.js'
 import config from 'config'
 import fs = require('fs')
 import { Logger } from '../utils/logger'
@@ -79,23 +79,19 @@ export class Command {
 
     this.logger.log(`Processing Command "${userCommand.name}" from Channel ${message.channel} - Server: ${message.guild} <#${message.guild.id}>`)
 
-    let react: MessageReaction
+    let replied: Promise<Discord.Message>
+    let result: CommandExecutionResult
     try {
-      if (command.notifyAuthor) {
-        message.react(CommandStatusEmoji.Processing).then(re => react = re)
-      }
-      const result: CommandExecutionResult = await command.execute(message, userCommand.args)
+      replied = command.notifyAuthor ? command.notificationCallback?.preprocess?.apply(this, [message]) : undefined
+
+      result = await command.execute(message, userCommand.args, replied)
       if (result && !result.status) {
         throw result.error || new Error(`Command [${userCommand.name}] failed to execute`)
       }
-      if (command.notifyAuthor) {
-        react?.remove() && message.react(CommandStatusEmoji.Done).then(re => react = re)
-      }
+      command.notifyAuthor && command.notificationCallback?.success?.apply(this, [message, replied])
     } catch (e) {
       this.logger.error(e)
-      if (command.notifyAuthor) {
-        react?.remove() && message.react(CommandStatusEmoji.Failed).then(re => react = re)
-      }
+      command.notifyAuthor && command.notificationCallback?.failed?.apply(this, [message, replied, result])
     }
   }
 }

@@ -1,4 +1,4 @@
-import { CommandExecutionResult, CommandResponseType } from '../types/command'
+import { Command, CommandExecutionResult, CommandResponseType } from '../types/command'
 import { Message } from '../types/command/message'
 import { EmbedShipPageAlias } from '../types/discord'
 import { findShip } from '../module/azurlane-wiki'
@@ -13,15 +13,24 @@ module.exports = {
   aliases: ['info', 'stats', 'skill'],
   description: 'Find Ship on Wiki',
   notifyAuthor: true,
+  notificationCallback: {
+    preprocess(message: Message, replied?: Promise<Message>): Promise<Message> {
+      const msg = `${message.author} Finding your ship, please wait...`
+      return replied ? Promise.resolve(replied).then(rpl => rpl.edit(msg)) : message.channel.send(msg)
+    },
+    failed(message: Message, replied?: Promise<Message>, result?: CommandExecutionResult): Promise<Message> {
+      const msg = result?.extraArgs?.message || `${message.author} ${generateGenericCommandResponse(CommandResponseType.Fail)}`
+      return replied ? Promise.resolve(replied).then(rpl => rpl.edit(msg)) : message.channel.send(msg)
+    }
+  },
   guildOnly: true,
   args: true,
   usage: '<ship name>',
-  async execute(message: Message, args: string[]): Promise<CommandExecutionResult> {
+  async execute(message: Message, args: string[], replied?: Promise<Message>): Promise<CommandExecutionResult> {
     try {
       const ship = await findShip(args.join(' ').trim(), generateWikitextParseOptions(WikitextParserOptionsType.Discord))
       if (!ship) {
-        await message.reply('Ship not found. Please try a different search term.')
-        return
+        return { status: false, extraArgs: { message: `${message.author} Ship not found. Please try a different search term.` } }
       }
       const shipEmbedList = generateShipProfileEmbed(ship, EmbedShipPageAlias.Info)
       switch (message.command.name) {
@@ -33,12 +42,11 @@ module.exports = {
           break
       }
 
-      await new PaginateEmbed(message, shipEmbedList).reply()
+      await new PaginateEmbed(message, shipEmbedList).reply(replied)
 
       return { status: true }
     } catch (e) {
-      await message.reply(generateGenericCommandResponse(CommandResponseType.Fail))
       return { status: false, error: e }
     }
   },
-}
+} as Command

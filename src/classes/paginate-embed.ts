@@ -39,8 +39,8 @@ export class PaginateEmbed {
     this.waitTime = time
   }
 
-  async reply(waitTime?: number): Promise<void> {
-    this.replied = await this.message.reply(this.embedList.currentPage())
+  async reply(replied?: Promise<Message>, waitTime?: number): Promise<void> {
+    this.replied = await (await replied)?.edit('', this.embedList.currentPage()) || await this.message.reply(this.embedList.currentPage())
     await this.reactPaginationEmotes()
     await this.startCollector(waitTime)
   }

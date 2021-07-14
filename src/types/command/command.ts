@@ -1,5 +1,5 @@
 import * as t from 'ts-interface-checker'
-import Discord from 'discord.js'
+import { Message } from 'discord.js'
 
 const Command = t.iface([], {
   'name': 'string',
@@ -21,17 +21,26 @@ export interface Command {
   aliases?: string[]
   description?: string
   notifyAuthor? :boolean
+  notificationCallback?: NotificationCallback
   guildOnly?: boolean
   args?: boolean
   usage?: string
-  execute: (message: Discord.Message, args: string[]) => Promise<CommandExecutionResult>
+  execute: (message: Message, args: string[], replied?: Promise<Message>) => Promise<CommandExecutionResult>
+}
+
+interface NotificationCallback {
+  preprocess?(message: Message, replied?: Promise<Message>): Promise<Message>
+  success?(message: Message, replied?: Promise<Message>, result?: CommandExecutionResult): Promise<Message>
+  failed?(message: Message, replied?: Promise<Message>, result?: CommandExecutionResult): Promise<Message>
 }
 
 export interface CommandExecutionResult {
   status: boolean
   error?: any
+  extraArgs?: { [p: string]: any }
 }
 
 export enum CommandResponseType {
-  Fail = 'fail'
+  Fail = 'fail',
+  Success = 'success'
 }
