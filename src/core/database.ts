@@ -45,8 +45,8 @@ function initializeAzurAPIClient() {
 
 function initializeFuseClients() {
   const shipNameOptions = {
+    ignoreFieldNorm: true,
     includeScore: true,
-    threshold: 0.25,
     keys: ['name', 'normalized']
   }
   normalShipNameIndex = new Fuse(localDatabase.shipNameList.normal, shipNameOptions)
