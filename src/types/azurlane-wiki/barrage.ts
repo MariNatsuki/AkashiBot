@@ -1,9 +1,14 @@
 export interface BarrageInfo {
   name: string
-  ship: string
+  ship: Ship
   icon: string
   image: string
   rounds: Round[]
+}
+
+export interface Ship {
+  name: string
+  url: string
 }
 
 export interface Round {

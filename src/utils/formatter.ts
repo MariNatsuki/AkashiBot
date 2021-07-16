@@ -2,6 +2,7 @@ import config from 'config'
 import { ParseWikitextOptions, WikitextParserOptionsType } from '../types/formatter'
 import { LinkType } from '../types/wiki'
 import { Url } from '../types/formatter'
+import { generatePageUrlFromPageName, generateWikipediaUrlFromPageName } from '../helpers/wiki.helper'
 
 export function generateWikitextParseOptions(type: WikitextParserOptionsType): ParseWikitextOptions {
   switch (type) {
@@ -26,9 +27,9 @@ const discordParseWikitextOptions: ParseWikitextOptions = {
     const url = (() => {
       switch (type) {
         case LinkType.Internal:
-          return `${config.get('Wiki.Detail.url.main').replace(new RegExp('[/]+$'), '')}/${outputUrl}`
+          return generatePageUrlFromPageName(outputUrl)
         case LinkType.Wikipedia:
-          return `${config.get('Wiki.Others.Wikipedia.url').replace(new RegExp('[/]+$'), '')}/${outputUrl}`
+          return generateWikipediaUrlFromPageName(outputUrl)
         default:
           return outputUrl
       }

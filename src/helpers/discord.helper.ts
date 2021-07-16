@@ -101,7 +101,8 @@ export function generateBarrageEmbed(barrages: BarrageInfo[], defaultPageParam: 
   const embedList = new List<MessageEmbed>()
   barrages.forEach((barrage, key) => {
     const embed = new MessageEmbed()
-      .setTitle(barrage.ship)
+      .setTitle(barrage.ship.name)
+      .setURL(barrage.ship.url)
       .setDescription(`__**${barrage.name}**__\n*Values listed below assume the entire barrage hits an enemy.*`)
       .setColor('#eb1333')
       .setThumbnail(barrage.icon)

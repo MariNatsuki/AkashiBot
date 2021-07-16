@@ -7,6 +7,9 @@ export type WikiArguments = ArgumentTypes<typeof WikiJs>
 
 export interface Wiki extends Omit<ReturnType<typeof WikiJs>, 'find'> {
   api?(params?): Promise<any>
+  wikitext(query: string): Promise<string>
+  findImages(page: string, images?: string[]): Promise<Record<string, any>[]>
+  findImagesAlt(page: string, images?: string[]): Promise<Record<string, any>[]>
   find(query: string, predicate?: (pages: Page[]) => Page): Promise<Page>
 }
 

@@ -3,12 +3,15 @@ import config from 'config'
 import { Wiki } from '../core/wiki'
 import { ShipInfo, ShipList, Skill } from '../types/azurlane-wiki'
 import {
-  convertShipRarityToStars,
+  convertShipRarityToStars, extractBarrageRoundInfoFromWikiBarrage,
   extractEquipmentsFromInfo,
   extractShipImagesFromWikiImages,
   extractSkillImagesFromWikiImages,
   extractSkillsFromInfo,
-  extractStatsFromInfo, formatBarrageDataFromDatabase,
+  extractStatsFromInfo,
+  formatBarrageDataFromDatabase,
+  formatBarrageIconFileName,
+  formatBarrageImageFileName,
   formatShipDataFromDatabase,
   parseInfoFromWikitext
 } from '../helpers/wiki.helper'
@@ -107,12 +110,15 @@ async function getShipFromWiki(shipName: string, options: ParseWikitextOptions):
     name,
     url,
     description: '',
-    va: shipInfo.VA,
+    va: {
+      name: shipInfo.VA.text,
+      url: shipInfo.VA.url
+    },
     artist: {
       name: shipInfo.Artist,
       link: shipInfo.ArtistLink,
-      pixiv: shipInfo.ArtistPixiv,
-      twitter: shipInfo.ArtistTwitter
+      pixiv: shipInfo.ArtistPixiv.url,
+      twitter: shipInfo.ArtistTwitter.url
     },
     images: shipImages,
     rarity: {
@@ -125,26 +131,6 @@ async function getShipFromWiki(shipName: string, options: ParseWikitextOptions):
     stats: extractStatsFromInfo(shipInfo),
     equipments: extractEquipmentsFromInfo(shipInfo),
     skills: extractSkillsFromInfo(shipInfo, skillImages)
-  }
-}
-
-export async function findSkill(shipName: string, options?: ParseWikitextOptions): Promise<Skill[]> {
-  try {
-    const search = await searchShip(shipName)
-    if (!search) {
-      return null
-    }
-    const page = await wiki.find(search)
-
-    const [info, skillImages] = await Promise.all([
-      page.rawInfo().then(rawInfo => parseInfoFromWikitext(rawInfo, options)),
-      page.rawImages().then(images => extractSkillImagesFromWikiImages(images))
-    ])
-
-    return extractSkillsFromInfo(info.Ship, skillImages)
-  } catch (e) {
-    logger.error('Finding Skill encountered an error', e.stack)
-    return null
   }
 }
 
@@ -165,5 +151,52 @@ export async function findBarrage(shipName: string, options?: ParseWikitextOptio
     return null
   }
 
-  return (await getBarrageFromDatabase(search)).map(barrage => formatBarrageDataFromDatabase(search, barrage))
+  return getBarrageFromWiki(search, options)
+
+  const barrageInfoFromDatabase = (await getBarrageFromDatabase(search)).map(barrage => formatBarrageDataFromDatabase(search, barrage))
+
+  return barrageInfoFromDatabase.length ? barrageInfoFromDatabase : getBarrageFromWiki(search, options)
+}
+
+async function getBarrageFromWiki(shipName: string, options: ParseWikitextOptions): Promise<BarrageInfo[]> {
+  const barrages = parseInfoFromWikitext(await wiki.wikitext('Barrage'), options).BarrageList
+  if (Array.isArray(barrages)) {
+    const founds = barrages.filter(barrage => Array.isArray(barrage.Ships) ? barrage.Ships.find(info => info.text === shipName) : barrage.Ships.text === shipName)
+    if (founds) {
+      let iconFileList = []
+      let imageFileList = []
+      founds.forEach(barrage => {
+        iconFileList = [...iconFileList, formatBarrageIconFileName(barrage.SkillIcon)]
+        imageFileList = [...imageFileList, formatBarrageImageFileName(barrage.GifID)]
+      })
+      await Promise.all([
+        wiki.findImages('Barrage', iconFileList).then(results => results.forEach(
+          result => founds.forEach(
+            barrage => formatBarrageIconFileName(barrage.SkillIcon) === result.title ? barrage.IconUrl = result.imageinfo[0]?.url : ''
+          )
+        )),
+        wiki.findImagesAlt('Barrage', imageFileList).then(results => results.forEach(
+          result => founds.forEach(
+            barrage => formatBarrageImageFileName(barrage.GifID) === result.title ? barrage.ImageUrl = result.imageinfo[0]?.url : ''
+          )
+        ))
+      ])
+
+      return founds.map(barrage => {
+        const ship = Array.isArray(barrage.Ships) ? barrage.Ships.find(shp => shp.text === shipName) : barrage.Ships
+        return {
+          name: barrage.Name,
+          ship: {
+            name: ship.text,
+            url: ship.url
+          },
+          icon: barrage.IconUrl,
+          image: barrage.ImageUrl,
+          rounds: extractBarrageRoundInfoFromWikiBarrage(barrage),
+        }
+      })
+    }
+  }
+
+  return []
 }

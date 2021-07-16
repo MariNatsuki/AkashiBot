@@ -1,14 +1,15 @@
 import cejs = require('cejs')
+import config from 'config'
 import { RARITY_HEX_MAP, ShipRarityStars } from '../constants/azurlane-wiki.constant'
-import { Equipment, ShipInfo, Skill, Stats } from '../types/azurlane-wiki'
+import { Equipment, Round, ShipInfo, Skill, Stats } from '../types/azurlane-wiki'
 import { LinkType, TemplateTitle } from '../types/wiki'
 import { ParseWikitextOptions, WikitextParserOptionsType } from '../types/formatter'
 import { generateWikitextParseOptions } from '../utils/formatter'
+import { BarrageInfo } from '../types/azurlane-wiki'
 import { Ship } from '@azurapi/azurapi/build/types/ship'
 import { SkillType } from '../constants/emoji.constants'
 import { SkillColorToTypeMap } from '../constants/database.constant'
 import { Barrage } from '@azurapi/azurapi/build/types/barrage'
-import { BarrageInfo, Round } from '../types/azurlane-wiki/barrage'
 
 cejs.run('application.net.wiki')
 
@@ -101,28 +102,75 @@ export function extractSkillImagesFromWikiImages(images: any[]): { [imageId: str
   }, {})
 }
 
+export function extractBarrageRoundInfoFromWikiBarrage(barrage: Record<string, any>): Round[] {
+  const result: Round[] = []
+  Object.keys(barrage).forEach(key => {
+    const match = key.match(/^Dmg\d*Type$/)
+    if (match) {
+      const index = match[1] ? parseInt(match[1].trim()) : ''
+      const resultIndex = index ? index - 1 : 0
+      result[resultIndex] = {
+        type: barrage[key],
+        dmgL: parseInt(barrage[`Dmg${index}L`]),
+        dmgM: parseInt(barrage[`Dmg${index}M`]),
+        dmgH: parseInt(barrage[`Dmg${index}H`]),
+        note: barrage[`Notes${index}`]
+      }
+    }
+  })
+  return result
+}
+
+export function formatBarrageIconFileName(id: string) {
+  return `File:Skill ${id}.png`
+}
+
+export function formatBarrageImageFileName(id: string) {
+  return `File:Bullet pattern skill ${id}.gif`
+}
+
+export function generatePageUrlFromPageName(name: string): string {
+  return `${config.get('Wiki.Detail.url.main').replace(new RegExp('[/]+$'), '')}/${name}`
+}
+
+export function generateWikipediaUrlFromPageName(name: string): string {
+  return `${config.get('Wiki.Others.Wikipedia.url').replace(new RegExp('[/]+$'), '')}/${name}`
+}
+
 export function parseInfoFromWikitext(wikitext: string, options?: ParseWikitextOptions): Record<string, any> {
   const data = {}
   const parsed = cejs.wiki.parser(wikitext)
   parsed.each('template', token => {
-    data[token.name] = data[token.name] || {}
+    const content = {}
     for (const [key, value] of Object.entries(token.parameters)) {
-      data[token.name][key] = convertWikitextValue(
-        value, { ...generateWikitextParseOptions(WikitextParserOptionsType.Default), ...options }
-      ).trim()
+      content[key] = convertWikitextValue(value, { ...generateWikitextParseOptions(WikitextParserOptionsType.Default), ...options })
     }
+    data[token.name] = data[token.name] ? (Array.isArray(data[token.name]) ? [...data[token.name], content] : [data[token.name]]) : content
   })
-
   return data
 }
 
 function convertWikitextValue(value: any, options: ParseWikitextOptions): string {
   switch (typeof value) {
     case 'string':
-      return value
+      return value.trim()
     case 'object':
       let parsed
       switch (value.type) {
+        case 'plain':
+          return value.reduce((result: string | any[], item, index) => {
+            if (typeof value[index + 1] === 'string' && typeof item === 'object') {
+              if (value[index + 1].trim() !== ',') {
+                item.extra_text = value[index + 1].replace(/,\s*$/, '')
+              }
+              value[index + 1] = ''
+            }
+            const convertedValue = convertWikitextValue(item, options)
+            if (convertedValue) {
+              result = result ? (Array.isArray(result) ? [...result, convertedValue] : [result, convertedValue]) : convertedValue
+            }
+            return result
+          }, null)
         case 'comment':
           break
         case 'link':
@@ -200,7 +248,7 @@ export function convertRarityToColor(rarity: string): string {
 }
 
 export function formatShipDataFromDatabase(data: Ship): ShipInfo {
-  return {
+  return data ? {
     name: data.names.en,
     url: data.wikiUrl,
     description: '',
@@ -228,7 +276,7 @@ export function formatShipDataFromDatabase(data: Ship): ShipInfo {
     stats: extractStatsFromDatabase(data),
     equipments: extractEquipmentsFromDatabase(data),
     skills: extractSkillsFromDatabase(data)
-  }
+  } : null
 }
 
 function extractStatsFromDatabase(data: Ship): Stats {
@@ -278,7 +326,10 @@ function mapSkillColorWithType(color: string): SkillType {
 export function formatBarrageDataFromDatabase(ship: string, data: Barrage): BarrageInfo {
   return {
     name: data['name'],
-    ship,
+    ship: {
+      name: ship,
+      url: generatePageUrlFromPageName(ship)
+    },
     icon: data['icon'],
     image: data['image'],
     rounds: data['rounds'],

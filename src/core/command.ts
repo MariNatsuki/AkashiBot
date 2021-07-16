@@ -83,7 +83,7 @@ export class Command {
       return message.channel.send(reply)
     }
 
-    this.logger.log(`Processing Command "${userCommand.name}" from Channel ${message.channel} - Server: ${message.guild} <#${message.guild.id}>`)
+    this.logger.log(`Processing Command [${userCommand.name}] from Channel ${message.channel} - Server: ${message.guild} <#${message.guild.id}>`)
 
     let replied: Promise<Message>
     let result: CommandExecutionResult
@@ -96,7 +96,7 @@ export class Command {
       }
       command.notifyAuthor && command.notificationCallback?.success?.apply(this, [message, replied])
     } catch (e) {
-      this.logger.error(e)
+      this.logger.error(`Processing command [${command.name}] encountered an error`, e.stack)
       command.notifyAuthor && command.notificationCallback?.failed?.apply(this, [message, replied, result])
     }
   }
