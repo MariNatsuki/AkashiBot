@@ -1,7 +1,7 @@
 import cejs = require('cejs')
 import config from 'config'
 import { RARITY_HEX_MAP, ShipRarityStars } from '../constants/azurlane-wiki.constant'
-import { Equipment, Round, ShipInfo, Skill, Stats } from '../types/azurlane-wiki'
+import { Equipment as ShipEquipment, Round, ShipInfo, Skill, Stats } from '../types/azurlane-wiki'
 import { LinkType, TemplateTitle } from '../types/wiki'
 import { ParseWikitextOptions, WikitextParserOptionsType } from '../types/formatter'
 import { generateWikitextParseOptions } from '../utils/formatter'
@@ -10,6 +10,8 @@ import { Ship } from '@azurapi/azurapi/build/types/ship'
 import { SkillType } from '../constants/emoji.constants'
 import { SkillColorToTypeMap } from '../constants/database.constant'
 import { Barrage } from '@azurapi/azurapi/build/types/barrage'
+import { EquipmentInfo } from '../types/azurlane-wiki'
+import { Equipment } from '@azurapi/azurapi/build/types/equipment'
 
 cejs.run('application.net.wiki')
 
@@ -59,8 +61,8 @@ export function extractStatsFromInfo(shipInfo: Record<string, any>): Stats {
   }
 }
 
-export function extractEquipmentsFromInfo(shipInfo: Record<string, any>): Equipment[] {
-  const result: Equipment[] = []
+export function extractEquipmentsFromInfo(shipInfo: Record<string, any>): ShipEquipment[] {
+  const result: ShipEquipment[] = []
   if (typeof shipInfo !== 'object') return result
   let count = 1
   while (shipInfo[`Eq${count}Type`]) {
@@ -301,7 +303,7 @@ function extractStatsFromDatabase(data: Ship): Stats {
   }
 }
 
-function extractEquipmentsFromDatabase(data: Ship): Equipment[] {
+function extractEquipmentsFromDatabase(data: Ship): ShipEquipment[] {
   return data.slots.map(slot => ({
     type: slot?.type,
     efficiencyMin: slot?.minEfficiency?.toString(),
@@ -317,6 +319,28 @@ function extractSkillsFromDatabase(data: Ship): Skill[] {
     description: skill?.description,
     image: skill?.icon
   }))
+}
+
+export function formatEquipmentDataFromDatabase(data: Equipment): EquipmentInfo {
+  return data ? {
+    name: data['names']?.en,
+    url: data['wikiUrl'],
+    description: '',
+    images: {
+      icon: data['image'],
+      pattern: data['misc']?.animation
+    },
+    tiers: data['tiers']?.reduce((result, tier) => {
+      if (tier) {
+        result.push({
+          rarity: tier.rarity,
+          stars: tier.stars
+        })
+      }
+      return result
+    }, []),
+    nationality: data['nationality'],
+  } : null
 }
 
 function mapSkillColorWithType(color: string): SkillType {

@@ -1,6 +1,6 @@
 import { Command, CommandExecutionResult, CommandResponseType } from '../types/command'
 import { Message } from '../types/command/message'
-import { findBarrage } from '../module/azurlane-wiki'
+import { findEquipment } from '../module/azurlane-wiki'
 import { generateWikitextParseOptions } from '../utils/formatter'
 import { WikitextParserOptionsType } from '../types/formatter'
 import { generateGenericCommandResponse } from '../helpers/command.helper'
@@ -8,13 +8,14 @@ import { generateBarrageEmbed } from '../helpers/discord.helper'
 import { PaginateEmbed } from '../classes/paginate-embed'
 
 module.exports = {
-  name: 'barrage',
-  description: "Find Ship's barrages on Wiki",
+  name: 'equipment',
+  description: 'Find Equipments on Wiki',
+  aliases: ['equip', 'gear'],
   cooldown: 10000,
   notifyAuthor: true,
   notificationCallback: {
     preprocess(message: Message, replied?: Promise<Message>): Promise<Message> {
-      const msg = `${message.author} Finding barrages for your ship, please wait...`
+      const msg = `${message.author} Finding your equipment, please wait...`
       return replied ? Promise.resolve(replied).then(rpl => rpl.edit(msg)) : message.channel.send(msg)
     },
     failed(message: Message, replied?: Promise<Message>, result?: CommandExecutionResult): Promise<Message> {
@@ -24,16 +25,10 @@ module.exports = {
   },
   guildOnly: true,
   args: true,
-  usage: '<ship name>',
+  usage: '<equipment name>',
   async execute(message: Message, args: string[], replied?: Promise<Message>): Promise<CommandExecutionResult> {
     try {
-      const barrages = await findBarrage(args.join(' ').trim(), generateWikitextParseOptions(WikitextParserOptionsType.Discord))
-
-      if (!barrages || !barrages.length) {
-        return { status: false, extraArgs: { message: `${message.author} Ship not found. Please try a different search term.` } }
-      }
-
-      await new PaginateEmbed(message, generateBarrageEmbed(barrages, 0)).reply(replied)
+      const equipment = await findEquipment(args.join(' ').trim(), generateWikitextParseOptions(WikitextParserOptionsType.Discord))
 
       return { status: true }
     } catch (e) {

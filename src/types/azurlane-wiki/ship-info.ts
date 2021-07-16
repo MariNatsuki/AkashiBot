@@ -14,7 +14,7 @@ export interface ShipInfo {
   skills: Skill[]
 }
 
-export interface Images {
+interface Images {
   icon?: string,
   portrait?: string
 }

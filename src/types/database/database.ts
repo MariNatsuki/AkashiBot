@@ -2,7 +2,8 @@ export interface Database {
   shipNameList: {
     normal: ShipNameItem[],
     retrofitted: ShipNameItem[]
-  }
+  },
+  equipmentNameList: string[]
 }
 
 interface ShipNameItem {

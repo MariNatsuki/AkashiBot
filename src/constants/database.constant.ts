@@ -5,7 +5,8 @@ export const DefaultDatabase: Database = {
   shipNameList: {
     normal: [],
     retrofitted: []
-  }
+  },
+  equipmentNameList: []
 }
 
 export const SkillColorToTypeMap = {

@@ -1,9 +1,10 @@
 import { Logger } from '../utils/logger'
 import config from 'config'
 import { Wiki } from '../core/wiki'
-import { ShipInfo, ShipList, Skill } from '../types/azurlane-wiki'
+import { EquipmentInfo, ShipInfo, ShipList } from '../types/azurlane-wiki'
 import {
-  convertShipRarityToStars, extractBarrageRoundInfoFromWikiBarrage,
+  convertShipRarityToStars,
+  extractBarrageRoundInfoFromWikiBarrage,
   extractEquipmentsFromInfo,
   extractShipImagesFromWikiImages,
   extractSkillImagesFromWikiImages,
@@ -12,6 +13,7 @@ import {
   formatBarrageDataFromDatabase,
   formatBarrageIconFileName,
   formatBarrageImageFileName,
+  formatEquipmentDataFromDatabase,
   formatShipDataFromDatabase,
   parseInfoFromWikitext
 } from '../helpers/wiki.helper'
@@ -19,6 +21,8 @@ import {
   searchShip as searchShipInDatabase,
   getShip as getShipFromDatabase,
   getBarrage as getBarrageFromDatabase,
+  searchEquipment as searchEquipmentFromDatabase,
+  getEquipment as getEquipmentFromDatabase,
 } from '../core/database'
 import { ParseWikitextOptions } from '../types/formatter'
 import HeaderGenerator = require('header-generator')
@@ -77,6 +81,10 @@ async function fetchShipListFromWiki(templateType: string, outputArray?: string[
       const matched = item.innerText.match(/^\[\[(.*?)\|[a-zA-Z0-9]*]]$/)
       if (matched) resultArray.push(matched[1])
     }))
+}
+
+export async function getEquipmentList(): Promise<string[]> {
+  return wiki.pagesInCategory('Category:Equipment')
 }
 
 export async function findShip(shipName: string, options?: ParseWikitextOptions): Promise<ShipInfo> {
@@ -199,4 +207,14 @@ async function getBarrageFromWiki(shipName: string, options: ParseWikitextOption
   }
 
   return []
+}
+
+export async function findEquipment(equipmentName: string, options?: ParseWikitextOptions): Promise<EquipmentInfo> {
+  const search = searchEquipmentFromDatabase(equipmentName)
+
+  if (!search) {
+    return null
+  }
+
+  return formatEquipmentDataFromDatabase(await getEquipmentFromDatabase(search))
 }

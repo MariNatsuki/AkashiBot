@@ -1,6 +1,6 @@
 import { Job } from './template/job'
 import config from 'config'
-import { updateShipNameCache } from '../../core/database'
+import { updateEquipmentNameCache, updateShipNameCache } from '../../core/database'
 
 export class UpdateDatabase extends Job {
   public name = 'UpdateDatabase'
@@ -9,7 +9,10 @@ export class UpdateDatabase extends Job {
   async execution(): Promise<any> {
     this.logger.log('Updating Database Cache...')
     try {
-      await updateShipNameCache()
+      await Promise.all([
+        updateShipNameCache(),
+        updateEquipmentNameCache()
+      ])
       this.logger.log('Finished updating Database Cache!')
     }
     catch (e) {
