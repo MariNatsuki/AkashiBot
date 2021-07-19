@@ -1,4 +1,4 @@
-export type Emojis = ShipType | ShipRarity | ShipStats | SkillType
+export type Emojis = ShipType | Rarity | ShipStats | SkillType
 
 export enum ShipType {
   Destroyer = 'DD',
@@ -17,7 +17,7 @@ export enum ShipType {
   MunitionShip = 'AE'
 }
 
-export enum ShipRarity {
+export enum Rarity {
   Decisive = 'Rarity_DR',
   UltraRare = 'Rarity_UR',
   Priority = 'Rarity_PR',

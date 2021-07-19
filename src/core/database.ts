@@ -44,7 +44,7 @@ function fetchShipNameList(): Promise<any> {
 
 async function fetchEquipmentNameList(): Promise<any> {
   logger.log('Fetching Equipment List from Azur Lane Wiki...')
-  localDatabase.equipmentNameList = await getEquipmentList()
+  localDatabase.equipmentNameList = (await getEquipmentList()).filter(equip => !equip.startsWith('Category:') && !equip.startsWith('File:'))
   logger.log('Equipment list fetched and saved to local Database!')
 }
 

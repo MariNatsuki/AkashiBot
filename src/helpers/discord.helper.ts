@@ -1,12 +1,13 @@
-import { ShipInfo } from '../types/azurlane-wiki'
+import { EquipmentInfo, ShipInfo } from '../types/azurlane-wiki'
 import { List } from '../classes/list'
 import Discord, { MessageEmbed } from 'discord.js'
 import { EmbedShipPageAlias } from '../types/discord'
 import { convertRarityToColor } from './wiki.helper'
 import { findEmoji } from '../module/emoji'
-import { convertShipRarityToEmoji, convertShipTypeToEmoji, convertSkillTypeToEmoji } from './emoji.helper'
+import { convertRarityToEmoji, convertShipTypeToEmoji, convertSkillTypeToEmoji } from './emoji.helper'
 import { ShipStats } from '../constants/emoji.constants'
-import { BarrageInfo } from '../types/azurlane-wiki/barrage'
+import { BarrageInfo } from '../types/azurlane-wiki'
+import { STATS_PROPERTIES_FIELD_NAME_MAP } from '../constants/database.constant'
 
 export function generateShipProfileEmbed(shipInfo: ShipInfo, defaultPageAlias: string): List<MessageEmbed>
 export function generateShipProfileEmbed(shipInfo: ShipInfo, defaultPageIndex: number): List<MessageEmbed>
@@ -40,7 +41,7 @@ function generateShipInfoEmbed(shipInfo: ShipInfo): MessageEmbed {
     .setTitle(shipInfo.name)
     .setURL(shipInfo.url)
     .addFields(
-      { name: '> Rarity', value: `${findEmoji(convertShipRarityToEmoji(shipInfo.rarity.name))} ${shipInfo.rarity.name} (${shipInfo.rarity.stars})` },
+      { name: '> Rarity', value: `${findEmoji(convertRarityToEmoji(shipInfo.rarity.name))} ${shipInfo.rarity.name} (${shipInfo.rarity.stars})` },
       { name: '> Voice Actress', value: formatUrl(shipInfo.va.name, shipInfo.va.url), inline: true },
       { name: '> Artist', value: formatUrl(shipInfo.artist.name, shipInfo.artist?.link), inline: true },
       { name: '> Type', value: `${findEmoji(convertShipTypeToEmoji(shipInfo.shipType))} ${shipInfo.shipType}` },
@@ -127,4 +128,34 @@ export function generateBarrageEmbed(barrages: BarrageInfo[], defaultPageParam: 
 
 function formatUrl(text: string, url: string): string {
   return url ? `[${text}](${url})` : text
+}
+
+export function generateEquipmentEmbed(equipment: EquipmentInfo): List<MessageEmbed> {
+  const embedList = new List<MessageEmbed>()
+  equipment.tiers.forEach((tier, key) => {
+    const embed = new MessageEmbed()
+      .setTitle(equipment.name)
+      .setURL(equipment.url)
+      .setColor(convertRarityToColor(tier.rarity.name))
+      .setThumbnail(equipment.images.icon)
+      .setDescription(`__**${equipment.type}**__`)
+      .setFooter(`Page ${key + 1} of ${equipment.tiers.length}`)
+      .addFields(
+        { name: `> Rarity`, value: `${findEmoji(convertRarityToEmoji(tier.rarity.name))} ${tier.rarity.name} (${tier.rarity.stars})` },
+        { name: '> Faction', value: equipment.nationality },
+        { name: '\n> Obtained From', value: equipment.obtain },
+        { name: '\u200B', value: '> **Stats**' },
+      )
+    for (const stat in tier.stats) {
+      if (STATS_PROPERTIES_FIELD_NAME_MAP[stat] && tier.stats[stat]) {
+        embed.addField(STATS_PROPERTIES_FIELD_NAME_MAP[stat], tier.stats[stat], true)
+      }
+    }
+    if (equipment.images.pattern) {
+      embed.setImage(equipment.images.pattern)
+    }
+    embedList.addPage(embed)
+  })
+
+  return embedList
 }

@@ -1,7 +1,7 @@
 import cejs = require('cejs')
 import config from 'config'
 import { RARITY_HEX_MAP, ShipRarityStars } from '../constants/azurlane-wiki.constant'
-import { Equipment as ShipEquipment, Round, ShipInfo, Skill, Stats } from '../types/azurlane-wiki'
+import { Equipment as ShipEquipment, Images, Round, ShipInfo, Skill, Stats } from '../types/azurlane-wiki'
 import { LinkType, TemplateTitle } from '../types/wiki'
 import { ParseWikitextOptions, WikitextParserOptionsType } from '../types/formatter'
 import { generateWikitextParseOptions } from '../utils/formatter'
@@ -38,6 +38,23 @@ export function extractShipImagesFromWikiImages(name: string, images: any[]): { 
     }
     return accumulator
   }, {})
+}
+
+export function extractEquipmentImagesFromWikiImages(images: Record<string, any>, icon: string, pattern: string): Images {
+  const result: Images = {
+    icon: null,
+    pattern: null
+  }
+  images.every(image => {
+    if (image.title.match(`/^File:${icon}$/`)) {
+      result.icon = image.imageinfo[0].url
+    }
+    if (image.title.match(`/^File:Bullet pattern equip ${pattern}.gif$/`)) {
+      result.pattern = image.imageinfo[0].url
+    }
+    return !result.icon || !result.pattern
+  })
+  return result
 }
 
 export function extractStatsFromInfo(shipInfo: Record<string, any>): Stats {
@@ -147,7 +164,7 @@ export function parseInfoFromWikitext(wikitext: string, options?: ParseWikitextO
     for (const [key, value] of Object.entries(token.parameters)) {
       content[key] = convertWikitextValue(value, { ...generateWikitextParseOptions(WikitextParserOptionsType.Default), ...options })
     }
-    data[token.name] = data[token.name] ? (Array.isArray(data[token.name]) ? [...data[token.name], content] : [data[token.name]]) : content
+    data[token.name] = data[token.name] ? [...(Array.isArray(data[token.name]) ? data[token.name] : [data[token.name]]), content] : content
   })
   return data
 }
@@ -169,7 +186,7 @@ function convertWikitextValue(value: any, options: ParseWikitextOptions): string
             }
             const convertedValue = convertWikitextValue(item, options)
             if (convertedValue) {
-              result = result ? (Array.isArray(result) ? [...result, convertedValue] : [result, convertedValue]) : convertedValue
+              result = result ? [...(Array.isArray(result) ? result : [result]), convertedValue] : convertedValue
             }
             return result
           }, null)
@@ -323,7 +340,7 @@ function extractSkillsFromDatabase(data: Ship): Skill[] {
 
 export function formatEquipmentDataFromDatabase(data: Equipment): EquipmentInfo {
   return data ? {
-    name: data['names']?.en,
+    name: data['id'],
     url: data['wikiUrl'],
     description: '',
     images: {
@@ -332,14 +349,25 @@ export function formatEquipmentDataFromDatabase(data: Equipment): EquipmentInfo 
     },
     tiers: data['tiers']?.reduce((result, tier) => {
       if (tier) {
-        result.push({
-          rarity: tier.rarity,
-          stars: tier.stars
-        })
+        const out = {
+          rarity: {
+            name: tier.rarity,
+            stars: tier.stars.stars
+          },
+          stats: {}
+        }
+        for (const name in tier.stats) {
+          out.stats[name] = tier.stats[name].type === 'more_stats' ?
+            tier.stats[name].stats?.reduce((out, stat) => `${out}\n${stat.formatted}`, '')?.trim() :
+            tier.stats[name].formatted
+        }
+        result.push(out)
       }
       return result
     }, []),
+    type: data['category'],
     nationality: data['nationality'],
+    obtain: data['misc']['obtainedFrom']
   } : null
 }
 

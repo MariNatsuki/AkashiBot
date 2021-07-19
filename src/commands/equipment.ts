@@ -4,7 +4,7 @@ import { findEquipment } from '../module/azurlane-wiki'
 import { generateWikitextParseOptions } from '../utils/formatter'
 import { WikitextParserOptionsType } from '../types/formatter'
 import { generateGenericCommandResponse } from '../helpers/command.helper'
-import { generateBarrageEmbed } from '../helpers/discord.helper'
+import { generateEquipmentEmbed } from '../helpers/discord.helper'
 import { PaginateEmbed } from '../classes/paginate-embed'
 
 module.exports = {
@@ -29,9 +29,16 @@ module.exports = {
   async execute(message: Message, args: string[], replied?: Promise<Message>): Promise<CommandExecutionResult> {
     try {
       const equipment = await findEquipment(args.join(' ').trim(), generateWikitextParseOptions(WikitextParserOptionsType.Discord))
+      console.log(equipment)
+      if (!equipment) {
+        return { status: false, extraArgs: { message: `${message.author} Equipment not found. Please try a different search term.` } }
+      }
+
+      await new PaginateEmbed(message, generateEquipmentEmbed(equipment)).reply(replied)
 
       return { status: true }
     } catch (e) {
+      console.log(e)
       return { status: false, error: e }
     }
   },

@@ -5,6 +5,7 @@ import { EquipmentInfo, ShipInfo, ShipList } from '../types/azurlane-wiki'
 import {
   convertShipRarityToStars,
   extractBarrageRoundInfoFromWikiBarrage,
+  extractEquipmentImagesFromWikiImages,
   extractEquipmentsFromInfo,
   extractShipImagesFromWikiImages,
   extractSkillImagesFromWikiImages,
@@ -14,7 +15,7 @@ import {
   formatBarrageIconFileName,
   formatBarrageImageFileName,
   formatEquipmentDataFromDatabase,
-  formatShipDataFromDatabase,
+  formatShipDataFromDatabase, generatePageUrlFromPageName,
   parseInfoFromWikitext
 } from '../helpers/wiki.helper'
 import {
@@ -28,7 +29,7 @@ import { ParseWikitextOptions } from '../types/formatter'
 import HeaderGenerator = require('header-generator')
 import { parse } from 'node-html-parser'
 import { ShipListNormalGroupTemplate, ShipListRetrofittedTemplate } from '../constants/azurlane-wiki.constant'
-import { BarrageInfo } from '../types/azurlane-wiki/barrage'
+import { BarrageInfo } from '../types/azurlane-wiki'
 
 const logger = new Logger('AzurLaneWikiModule')
 
@@ -159,8 +160,6 @@ export async function findBarrage(shipName: string, options?: ParseWikitextOptio
     return null
   }
 
-  return getBarrageFromWiki(search, options)
-
   const barrageInfoFromDatabase = (await getBarrageFromDatabase(search)).map(barrage => formatBarrageDataFromDatabase(search, barrage))
 
   return barrageInfoFromDatabase.length ? barrageInfoFromDatabase : getBarrageFromWiki(search, options)
@@ -216,5 +215,28 @@ export async function findEquipment(equipmentName: string, options?: ParseWikite
     return null
   }
 
+  return getEquipmentFromWiki(search, options)
+
   return formatEquipmentDataFromDatabase(await getEquipmentFromDatabase(search))
+}
+
+async function getEquipmentFromWiki(equipmentName: string, options?: ParseWikitextOptions): Promise<EquipmentInfo> {
+  const [parsed, images] = await Promise.all([
+    wiki.wikitext(equipmentName).then(result => parseInfoFromWikitext(result, options)),
+    wiki.findImages(equipmentName)
+  ])
+  const equipments = parsed?.Equipment ? (Array.isArray(parsed.Equipment) ? parsed.Equipment : [parsed.Equipment]) : null
+  if (!equipments.length) {
+    return null
+  }
+  return {
+    name: equipments[0].Name,
+    url: generatePageUrlFromPageName(equipmentName),
+    description: '',
+    images: extractEquipmentImagesFromWikiImages(images, equipments[0].Image, equipments[0].BulletPattern),
+    tiers: [],
+    type: '',
+    nationality: '',
+    obtain: ''
+  }
 }

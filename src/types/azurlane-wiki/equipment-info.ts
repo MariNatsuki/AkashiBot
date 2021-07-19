@@ -4,15 +4,26 @@ export interface EquipmentInfo {
   description: string
   images: Images
   tiers: Tier[]
+  type: string
   nationality: string
+  obtain: string
 }
 
-interface Images {
+export interface Images {
   icon?: string,
   pattern?: string
 }
 
 export interface Tier {
-  rarity: string,
+  rarity: Rarity
+  stats: Stat[]
+}
+
+interface Rarity {
+  name: string
   stars?: string
+}
+
+interface Stat {
+  [name: string]: string
 }
