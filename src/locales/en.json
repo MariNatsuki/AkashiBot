@@ -1,0 +1,28 @@
+{
+	"chat": {
+		"description": "Have a fun conversation with {botName} using ChatGPT.",
+		"promptHint": "What you want to talk about.",
+		"isPrivateHint": "Talk in private with {botName}.",
+		"thinking": "⏳ I'm thinking, please wait..."
+	},
+	"act": {
+		"description": "Allow {botName} to act as preset characters.",
+		"roleHint": "Role to choose from, available options: {options}.",
+		"invalidRole": "You input an invalid Role, please try again.",
+		"success": "{botName} will start acting as {role} from now on."
+	},
+	"common": {
+		"on": "**on**",
+		"off": "**off**",
+		"enabled": "**enabled**",
+		"disabled": "**disabled**",
+		"errorNotChannel": "You need to join a voice channel first!",
+		"cooldownMessage": "Please wait {time} more second(s) before reusing the `{name}` command.",
+		"errorCommand": "There was an error executing that command."
+	},
+	"help": {
+		"embedTitle": "Help",
+		"description": "Get a list of available commands",
+		"embedDescription": "Available commands"
+	}
+}

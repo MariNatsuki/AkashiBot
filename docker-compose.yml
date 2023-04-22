@@ -1,0 +1,32 @@
+version: '3.7'
+
+services:
+  app:
+    container_name: "${APP_NAME}_${APP_ENV}_app"
+    build: .
+    env_file:
+      - .env
+    links:
+      - redis
+    depends_on:
+      - redis
+    networks:
+      - akashi-bot-network
+
+  redis:
+    image: redis:alpine
+    container_name: "${APP_NAME}_${APP_ENV}_redis"
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${REDIS_PORT}:6379"
+    command: redis-server --save 20 1 --loglevel warning
+    networks:
+      - akashi-bot-network
+    volumes:
+      - ./.docker/redis/data:/data
+
+networks:
+  akashi-bot-network:
+    driver: bridge

@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "outDir": "dist",
+    "target": "ES2021",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "lib": ["ES2021"],
+    "resolveJsonModule": true,
+    "useUnknownInCatchVariables": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "importHelpers": true,
+    "types": ["node"],
+    "sourceMap": true,
+    "strictPropertyInitialization": false
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.js",
+    "types/**/*.d.ts",
+    "./config.json",
+    "./src/locales/*.json",
+    "./sounds/*.mp3",
+    ".eslintrc.js"
+  ],
+  "exclude": [
+    ".github",
+    "dist",
+    "node_modules"
+  ]
+}

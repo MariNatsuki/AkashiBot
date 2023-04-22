@@ -1,0 +1,6 @@
+{
+  "name": "AkashiBot",
+  "description": "AkashiBot",
+  "repository": "https://github.com/MariNatsuki/AkashiBot",
+  "keywords": ["discord", "discordjs", "typescript", "music", "bot"]
+}

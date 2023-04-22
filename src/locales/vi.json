@@ -1,0 +1,17 @@
+{
+  "chat": {
+    "description": "Trò chuyện vui vẻ với {botName} bằng ChatGPT",
+    "promptHint": "Bạn muốn nói về điều gì",
+    "isPrivateHint": "Nói chuyện riêng với {botName}",
+    "thinking": "⏳ Tôi đang nghĩ, xin hãy đợi..."
+  },
+  "common": {
+    "on": "**TRÊN**",
+    "off": "**tắt**",
+    "enabled": "**đã bật**",
+    "disabled": "**tàn tật**",
+    "errorNotChannel": "Trước tiên, bạn cần tham gia một kênh thoại!",
+    "cooldownMessage": "Vui lòng đợi thêm {time} giây trước khi sử dụng lại lệnh `{name}`.",
+    "errorCommand": "Đã xảy ra lỗi khi thực thi lệnh đó."
+  }
+}
