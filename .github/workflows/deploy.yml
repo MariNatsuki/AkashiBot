@@ -1,0 +1,35 @@
+name: Deploy AkashiBot
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+
+    steps:
+      - name: Deploy code to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: .
+          target: ${{ vars.WORK_DIR }}
+
+      - name: SSH into Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ vars.WORK_DIR }}
+            git pull
+            docker compose down
+            docker container prune -f
+            docker image prune -f
+            docker compose up -d --build

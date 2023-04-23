@@ -83,6 +83,7 @@ export class Bot implements IBot {
     for (const file of commandFiles) {
       const command: Command = (await import(join(__dirname, '..', 'commands', `${file}`))).default;
       const commandData = isFunction(command.data) ? command.data(this) : command.data;
+      command.userPermissions?.forEach((permission) => commandData.setDefaultMemberPermissions(permission as bigint));
 
       commandDatas.push(commandData);
       this.commands.set(commandData.name, {
@@ -145,9 +146,9 @@ export class Bot implements IBot {
         this.logger.error(error);
 
         if (error instanceof MissingPermissionsException) {
-          interaction.reply({ content: error.toString(), ephemeral: true }).catch(console.error);
+          interaction.reply({ content: error.toString(), ephemeral: true }).catch(this.logger.error);
         } else {
-          interaction.reply({ content: i18n.__('common.errorCommand'), ephemeral: true }).catch(console.error);
+          interaction.reply({ content: i18n.__('common.errorCommand'), ephemeral: true }).catch(this.logger.error);
         }
       }
     });

@@ -7,6 +7,8 @@ const LAST_MESSAGE_MAP_KEY = 'userLastMessageIdMap';
 const ROLE_SYSTEM_MESSAGE_KEY = 'roleSystemMessage';
 const CHANNEL_ROLE_MAP_KEY = 'channelRoleMap';
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export default createModule(async ({ modules: { $redis } }) => {
   const apiRoleMap = new Map<Role | string, ChatGPTAPI>();
   await Promise.all(
@@ -17,7 +19,11 @@ export default createModule(async ({ modules: { $redis } }) => {
           apiBaseUrl: process.env.OPENAI_ENDPOINT,
           apiKey: process.env.OPENAI_API_KEY,
           fetch: (await eval("import('node-fetch')")).default,
-          systemMessage: `${message}\n` + 'Current time: ' + new Date()
+          systemMessage:
+            `${message}\n` +
+            'Current time: ' +
+            new Date() +
+            '\n Please use the appropriate markdown syntax for code blocks in your language. '
         } as ChatGPTAPIOptions)
       );
       return $redis.hset(ROLE_SYSTEM_MESSAGE_KEY, role, message);

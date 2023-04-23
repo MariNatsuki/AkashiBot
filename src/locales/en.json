@@ -7,9 +7,10 @@
 	},
 	"act": {
 		"description": "Allow {botName} to act as preset characters.",
-		"roleHint": "Role to choose from, available options: {options}.",
 		"invalidRole": "You input an invalid Role, please try again.",
-		"success": "{botName} will start acting as {role} from now on."
+		"success": "{botName} will start acting as {role} from now on.",
+		"chooseRole": "Please choose a role for {botName}:",
+		"timeout": "You took too long to make a selection. Please try again..."
 	},
 	"common": {
 		"on": "**on**",
