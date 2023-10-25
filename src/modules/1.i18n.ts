@@ -13,7 +13,6 @@ export default createModule(() => {
     defaultLocale: 'en',
     retryInDefaultLocale: true,
     objectNotation: true,
-    register: global,
 
     logWarnFn: function (msg) {
       logger.log(msg);

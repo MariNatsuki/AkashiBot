@@ -14,7 +14,7 @@ if [ -z "$1" ]; then
     bun install
     exec bun start:dev
   else
-    exec bun run start:prod
+    exec bun run start
   fi
 
 else

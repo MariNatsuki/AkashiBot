@@ -2,7 +2,7 @@ import type { Client, Interaction, Snowflake } from 'discord.js';
 import { Collection, Events, REST, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
 import { isFunction } from 'lodash';
-import { join } from 'path';
+import { dirname, join } from 'path';
 
 import type { _IBot, Modules } from '../../types/bot';
 import { MissingPermissionsException } from '../errors/missing-permissions-exception';
@@ -40,12 +40,11 @@ export class Bot implements _IBot {
   }
 
   private async loadModules() {
-    const moduleFiles = readdirSync(join(__dirname, '..', 'modules')).filter(
-      file => !file.endsWith('.map'),
-    );
+    const modulesPath = join(dirname(Bun.main), 'modules');
+    const moduleFiles = readdirSync(modulesPath).filter(file => !file.endsWith('.map'));
 
     for (const file of moduleFiles) {
-      const module = (await import(join(__dirname, '..', 'modules', `${file}`))).default;
+      const module = (await import(join(modulesPath, `${file}`))).default;
       if (isFunction(module)) {
         let moduleName = file;
         try {
@@ -78,13 +77,12 @@ export class Bot implements _IBot {
     if (!this.client.user?.id) {
       return;
     }
-    const commandFiles = readdirSync(join(__dirname, '..', 'commands')).filter(
-      file => !file.endsWith('.map'),
-    );
+    const commandsPath = join(dirname(Bun.main), 'commands');
+    const commandFiles = readdirSync(commandsPath).filter(file => !file.endsWith('.map'));
     const commandDatas = [];
 
     for (const file of commandFiles) {
-      const command: Command = (await import(join(__dirname, '..', 'commands', `${file}`))).default;
+      const command: Command = (await import(join(commandsPath, `${file}`))).default;
       const commandData = isFunction(command.data) ? command.data(this) : command.data;
       command.userPermissions?.forEach(permission =>
         commandData.setDefaultMemberPermissions(permission as bigint),

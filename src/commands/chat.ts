@@ -5,15 +5,15 @@ import { createCommand } from '../utils/create-command';
 import { Logger } from '../utils/logger';
 
 export default createCommand({
-  data: bot =>
+  data: ({ name, modules: { $i18n } }) =>
     new SlashCommandBuilder()
       .setName('chat')
-      .setDescription(bot.modules.$i18n.__mf('chat.description', { botName: bot.name }))
+      .setDescription($i18n.__mf('chat.description', { botName: name }))
       .addStringOption(option =>
-        option.setName('prompt').setDescription(i18n.__('chat.promptHint')).setRequired(true),
+        option.setName('prompt').setDescription($i18n.__('chat.promptHint')).setRequired(true),
       )
       .addBooleanOption(option =>
-        option.setName('is_private').setDescription(i18n.__('chat.isPrivateHint')),
+        option.setName('is_private').setDescription($i18n.__('chat.isPrivateHint')),
       ),
   async execute(
     interaction: ChatInputCommandInteraction<'cached'>,

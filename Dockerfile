@@ -33,6 +33,7 @@ COPY --from=install /temp/node_modules node_modules
 COPY --from=prerelease /usr/src/app/dist/ ./dist/
 COPY --from=prerelease /usr/src/app/package.json .
 COPY src /usr/src/app/src/
+COPY tsconfig.json /usr/src/app
 
 # run the app
 USER bun
