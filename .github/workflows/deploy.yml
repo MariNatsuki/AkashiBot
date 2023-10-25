@@ -28,7 +28,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ${{ vars.WORK_DIR }}
-            git pull
+            git fetch origin master
+            git reset --hard origin/master
             docker compose down
             docker container prune -f
             docker image prune -f
