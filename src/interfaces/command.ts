@@ -1,8 +1,15 @@
-import type { CacheType, ChatInputCommandInteraction, PermissionResolvable, SlashCommandBuilder } from 'discord.js';
+import type {
+  CacheType,
+  ChatInputCommandInteraction,
+  PermissionResolvable,
+  SlashCommandBuilder,
+} from 'discord.js';
 
 import type { IBot } from '../../types/bot';
 
-export type CommandBuilder = SlashCommandBuilder | Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>;
+export type CommandBuilder =
+  | SlashCommandBuilder
+  | Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>;
 
 export interface Command<Cache extends CacheType = CacheType> {
   userPermissions?: PermissionResolvable[];

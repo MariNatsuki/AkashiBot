@@ -17,12 +17,12 @@ export function paginateByLength(input: string, length: number): string[] {
       if (lastBreakPosition > 0) {
         return [
           trim(trimmedInput.substring(0, lastBreakPosition)),
-          ...paginateByLength(trim(trimmedInput.substring(lastBreakPosition)), length)
+          ...paginateByLength(trim(trimmedInput.substring(lastBreakPosition)), length),
         ];
       } else {
         return [
           trim(trimmedInput.substring(0, length - 1)),
-          ...paginateByLength(trim(trimmedInput.substring(length - 1)), length)
+          ...paginateByLength(trim(trimmedInput.substring(length - 1)), length),
         ];
       }
     }

@@ -1,6 +1,6 @@
 export enum Role {
   ChatGPT = 'ChatGPT',
-  Akashi = 'Akashi'
+  Akashi = 'Akashi',
 }
 
 export const SYSTEM_MESSAGES = {
@@ -11,5 +11,5 @@ export const SYSTEM_MESSAGES = {
     '\n' +
     "Please feel free to provide helpful tips and offers for the player, while maintaining Akashi's playful and charming personality. Additionally, please be aware of any recent updates or changes to the game to ensure accuracy in your roleplaying responses.\n" +
     '\n' +
-    'Thank you very much!'
+    'Thank you very much!',
 };

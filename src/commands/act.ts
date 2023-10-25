@@ -4,37 +4,42 @@ import {
   ButtonStyle,
   ComponentType,
   PermissionsBitField,
-  SlashCommandBuilder
+  SlashCommandBuilder,
 } from 'discord.js';
 
 import { Role } from '../constants/system-messages';
 import { createCommand } from '../utils/create-command';
-import { i18n } from '../utils/i18n';
 
 export default createCommand({
-  data: (bot) =>
+  data: bot =>
     new SlashCommandBuilder()
       .setName('act')
-      .setDescription(i18n.__mf('act.description', { botName: bot.name }))
+      .setDescription(bot.modules.$i18n.__mf('act.description', { botName: bot.name }))
       .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild),
   async execute(
     interaction,
     {
       modules: {
-        $chatgpt: { setChannelRole }
-      }
-    }
+        $i18n,
+        $chatgpt: { setChannelRole },
+      },
+    },
   ) {
     const rows: ActionRowBuilder<ButtonBuilder>[] = [];
     let rowButtons: ButtonBuilder[] = [];
 
-    Object.values(Role).forEach((role) => {
+    Object.values(Role).forEach(role => {
       if (rowButtons.length === 5) {
         rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents([...rowButtons]));
         rowButtons = [];
       }
 
-      rowButtons.push(new ButtonBuilder().setLabel(role).setStyle(ButtonStyle.Primary).setCustomId(`set-role-${role}`));
+      rowButtons.push(
+        new ButtonBuilder()
+          .setLabel(role)
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId(`set-role-${role}`),
+      );
     });
 
     if (rowButtons.length > 0) {
@@ -42,18 +47,18 @@ export default createCommand({
     }
 
     const reply = await interaction.reply({
-      content: i18n.__mf('act.chooseRole', { botName: interaction.client.user?.username }),
+      content: $i18n.__mf('act.chooseRole', { botName: interaction.client.user?.username }),
       components: [...rows],
-      fetchReply: true
+      fetchReply: true,
     });
 
     const collector = reply.createMessageComponentCollector({
       componentType: ComponentType.Button,
       time: 20000,
-      dispose: false
+      dispose: false,
     });
 
-    collector.on('collect', async (interaction) => {
+    collector.on('collect', async interaction => {
       if (!interaction.isButton()) return;
 
       const role = interaction.customId.replace(/^set-role-/, '');
@@ -64,8 +69,8 @@ export default createCommand({
 
       if (!isValidRole(role)) {
         await interaction.reply({
-          content: i18n.__('act.invalidRole'),
-          ephemeral: true
+          content: $i18n.__('act.invalidRole'),
+          ephemeral: true,
         });
         return;
       }
@@ -74,8 +79,11 @@ export default createCommand({
 
       // Edit the original message to update it with the selected role and remove the action row buttons
       await reply.edit({
-        content: i18n.__mf('act.success', { botName: interaction.client.user?.username || '', role }),
-        components: []
+        content: $i18n.__mf('act.success', {
+          botName: interaction.client.user?.username || '',
+          role,
+        }),
+        components: [],
       });
 
       collector.stop();
@@ -84,8 +92,8 @@ export default createCommand({
     collector.on('end', async () => {
       // Only display a timeout message if no interactions were collected
       if (collector.collected.size === 0) {
-        await reply.edit({ content: i18n.__mf('act.timeout'), components: [] });
+        await reply.edit({ content: $i18n.__mf('act.timeout'), components: [] });
       }
     });
-  }
+  },
 });

@@ -1,26 +1,41 @@
-FROM node:16.20-alpine
+FROM oven/bun:1 as base
+WORKDIR /usr/src/app
 
-ENV USER=akashibot
+RUN apt install bash
 
-# install python and make
-RUN apk update
-
-# create evobot user
-RUN set -x && \
-    addgroup -g 101 -S ${USER} && \
-	adduser -S -D -H -u 101 -h /home/akashibot -s /sbin/nologin -G ${USER} -g ${USER} ${USER}
-
-# set up volume and user
-USER ${USER}
-WORKDIR /home/akashibot
-
-COPY --chown=${USER}:${USER} package*.json ./
-RUN npm install
-VOLUME [ "/home/akashibot" ]
-
-COPY --chown=${USER}:${USER}  . .
-
-COPY --chown=${USER}:${USER} .docker/entrypoint.sh /etc/entrypoint.sh
+COPY --chown=bun:bun .docker/entrypoint.sh /etc/entrypoint.sh
 RUN ["chmod", "+x", "/etc/entrypoint.sh"]
 
 ENTRYPOINT ["/etc/entrypoint.sh"]
+
+# install dependencies into temp directory
+# this will cache them and speed up future builds
+FROM base AS install
+RUN mkdir -p /temp/dev
+COPY package.json bun.lockb /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
+
+# install with --production (exclude devDependencies)
+RUN mkdir -p /temp/prod
+COPY package.json bun.lockb /temp/prod/
+RUN cd /temp/prod && bun install --frozen-lockfile --production
+
+# copy node_modules from temp directory
+# then copy all (non-ignored) project files into the image
+FROM install AS prerelease
+COPY --from=install /temp/dev/node_modules node_modules
+COPY . .
+
+# [optional] tests & build
+ENV NODE_ENV=production
+RUN bun test
+RUN bun run build
+
+# copy production dependencies and source code into final image
+FROM base AS release
+COPY --from=install /temp/prod/node_modules node_modules
+COPY --from=prerelease /usr/src/app/dist/index.js .
+COPY --from=prerelease /usr/src/app/package.json .
+
+# run the app
+USER bun

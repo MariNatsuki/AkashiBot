@@ -7,14 +7,14 @@
   "author": "MariNatsuki <natsukimari6295@gmail.com>",
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsc --build",
+    "build": "bun build --target=bun ./src/index.ts --outdir=./dist && bunx --bun ncp ./src/locales ./dist/locales",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint --fix . --ext .ts",
-    "start:prod": "npm run build && node ./dist/index.js",
-    "start": "ts-node src/index.ts",
-    "start:dev": "ts-node-dev --respawn --transpile-only --poll src/index.ts",
-    "typecheck": "tsc -p ./tsconfig.json",
-    "generate:locales": "node src/scripts/translator.js ./src/locales en.json"
+    "start:prod": "bun run build && bun ./dist/index.js",
+    "start": "bun src/index.ts",
+    "start:dev": "bun --watch src/index.ts",
+    "typecheck": "tsc --noEmit -p ./tsconfig.json",
+    "generate:locales": "bun run src/scripts/translator.js ./src/locales en.json"
   },
   "config": {
     "commitizen": {
@@ -26,40 +26,39 @@
   "dependencies": {
     "@discordjs/voice": "^0.16.0",
     "array-move": "^4.0.0",
-    "chatgpt": "^5.2.2",
-    "discord.js": "^14.9.0",
-    "dotenv": "^16.0.3",
+    "chatgpt": "^5.2.5",
+    "discord.js": "^14.13.0",
     "i18n": "^0.15.1",
     "ioredis": "^5.3.2",
     "jsonfile": "^6.1.0",
     "lodash": "^4.17.21",
-    "pagination.djs": "^4.0.9",
+    "pagination.djs": "^4.0.12",
     "string-progressbar": "^1.0.4",
-    "translate": "^1.4.1",
-    "winston": "^3.8.2",
-    "youtube-sr": "~4.3.4"
+    "translate": "^2.0.2",
+    "winston": "^3.11.0",
+    "youtube-sr": "~4.3.9"
   },
   "devDependencies": {
-    "@types/i18n": "^0.13.6",
-    "@types/lodash": "^4.14.194",
-    "@types/node": "^18.15.13",
-    "@typescript-eslint/eslint-plugin": "^5.59.0",
-    "@typescript-eslint/parser": "^5.59.0",
+    "@types/i18n": "^0.13.8",
+    "@types/lodash": "^4.14.200",
+    "@types/node-fetch": "^2.6.7",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
+    "bun-types": "^1.0.7",
     "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^8.39.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint": "^8.52.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-simple-import-sort": "^10.0.0",
-    "prettier": "^2.8.7",
-    "ts-node": "^10.9.1",
-    "ts-node-dev": "^2.0.0"
+    "ncp": "^2.0.0",
+    "prettier": "^3.0.3"
   },
   "optionalDependencies": {
     "@discordjs/opus": "^0.9.0",
-    "libsodium-wrappers": "^0.7.11",
-    "opusscript": "^0.0.8",
-    "sodium-native": "^4.0.1",
+    "libsodium-wrappers": "^0.7.13",
+    "opusscript": "^0.1.1",
+    "sodium-native": "^4.0.4",
     "tweetnacl": "^1.0.3"
   },
   "engines": {

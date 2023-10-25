@@ -8,7 +8,7 @@ const Colors = {
   info: '\x1b[36m',
   error: '\x1b[31m',
   warn: '\x1b[33m',
-  verbose: '\x1b[43m'
+  verbose: '\x1b[43m',
 };
 
 export class Logger {
@@ -20,11 +20,13 @@ export class Logger {
       format: combine(
         timestamp(),
         printf(({ level, message, timestamp, trace }) => {
-          return `\x1b[0m[${timestamp}] [${Colors[level as keyof typeof Colors]}${level.toUpperCase()}\x1b[0m] ${
+          return `\x1b[0m[${timestamp}] [${
+            Colors[level as keyof typeof Colors]
+          }${level.toUpperCase()}\x1b[0m] ${
             context ? `[\x1b[1m${context}\x1b[0m] ` : ''
           }${message}${trace ? `\n${trace}` : ''}`;
-        })
-      )
+        }),
+      ),
     });
   }
 

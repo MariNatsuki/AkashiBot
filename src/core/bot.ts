@@ -4,17 +4,16 @@ import { readdirSync } from 'fs';
 import { isFunction } from 'lodash';
 import { join } from 'path';
 
-import type { IBot, Modules } from '../../types/bot';
+import type { _IBot, Modules } from '../../types/bot';
 import { MissingPermissionsException } from '../errors/missing-permissions-exception';
 import type { Command, CommandBuilder } from '../interfaces/command';
 import type { PermissionResult } from '../utils/check-permissions';
 import { checkBotPermission, checkUserPermission } from '../utils/check-permissions';
-import { i18n } from '../utils/i18n';
 import { Logger } from '../utils/logger';
 
-export class Bot implements IBot {
+export class Bot implements _IBot {
   private readonly logger = new Logger('Bot');
-  private readonly rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
+  private readonly rest = new REST({ version: '9' }).setToken(Bun.env.DISCORD_TOKEN);
 
   public name: string | undefined;
   public modules = {} as Modules;
@@ -22,7 +21,7 @@ export class Bot implements IBot {
   public cooldowns = new Collection<string, Collection<Snowflake, number>>();
 
   public constructor(public readonly client: Client) {
-    this.client.login(process.env.DISCORD_TOKEN).catch((error) => this.logger.error(error));
+    this.client.login(process.env.DISCORD_TOKEN).catch(error => this.logger.error(error));
 
     this.client.on('ready', async () => {
       this.logger.log(`${this.client.user?.username} ready!`);
@@ -34,14 +33,16 @@ export class Bot implements IBot {
       await this.registerSlashCommands();
     });
 
-    this.client.on('warn', (info) => this.logger.log(info));
+    this.client.on('warn', info => this.logger.log(info));
     this.client.on('error', this.logger.error);
 
     this.onInteractionCreate();
   }
 
   private async loadModules() {
-    const moduleFiles = readdirSync(join(__dirname, '..', 'modules')).filter((file) => !file.endsWith('.map'));
+    const moduleFiles = readdirSync(join(__dirname, '..', 'modules')).filter(
+      file => !file.endsWith('.map'),
+    );
 
     for (const file of moduleFiles) {
       const module = (await import(join(__dirname, '..', 'modules', `${file}`))).default;
@@ -77,29 +78,36 @@ export class Bot implements IBot {
     if (!this.client.user?.id) {
       return;
     }
-    const commandFiles = readdirSync(join(__dirname, '..', 'commands')).filter((file) => !file.endsWith('.map'));
+    const commandFiles = readdirSync(join(__dirname, '..', 'commands')).filter(
+      file => !file.endsWith('.map'),
+    );
     const commandDatas = [];
 
     for (const file of commandFiles) {
       const command: Command = (await import(join(__dirname, '..', 'commands', `${file}`))).default;
       const commandData = isFunction(command.data) ? command.data(this) : command.data;
-      command.userPermissions?.forEach((permission) => commandData.setDefaultMemberPermissions(permission as bigint));
+      command.userPermissions?.forEach(permission =>
+        commandData.setDefaultMemberPermissions(permission as bigint),
+      );
 
       commandDatas.push(commandData);
       this.commands.set(commandData.name, {
         ...command,
-        data: commandData
+        data: commandData,
       });
     }
 
-    const registeredCommands = (await this.rest.put(Routes.applicationCommands(this.client.user.id), {
-      body: commandDatas
-    })) as { name: string; description: string }[];
+    const registeredCommands = (await this.rest.put(
+      Routes.applicationCommands(this.client.user.id),
+      {
+        body: commandDatas,
+      },
+    )) as { name: string; description: string }[];
     registeredCommands.forEach(({ name }) => this.logger.log(`Command [${name}] registered!`));
   }
 
   private onInteractionCreate() {
-    this.client.on(Events.InteractionCreate, async (interaction: Interaction): Promise<any> => {
+    this.client.on(Events.InteractionCreate, async (interaction: Interaction): Promise<void> => {
       if (!interaction.isChatInputCommand()) return;
 
       const command = this.commands.get(interaction.commandName);
@@ -120,13 +128,14 @@ export class Bot implements IBot {
 
         if (now < expirationTime) {
           const timeLeft = (expirationTime - now) / 1000;
-          return interaction.reply({
-            content: i18n.__mf('common.cooldownMessage', {
+          await interaction.reply({
+            content: this.modules.$i18n.__mf('common.cooldownMessage', {
               time: timeLeft.toFixed(1),
-              name: interaction.commandName
+              name: interaction.commandName,
             }),
-            ephemeral: true
+            ephemeral: true,
           });
+          return;
         }
       }
 
@@ -136,7 +145,10 @@ export class Bot implements IBot {
       try {
         let permissionsCheck: PermissionResult;
         if (!(permissionsCheck = await checkBotPermission(command, interaction)).result) {
-          throw new MissingPermissionsException(permissionsCheck.missing, `${this.name} missing permissions: `);
+          throw new MissingPermissionsException(
+            permissionsCheck.missing,
+            `${this.name} missing permissions: `,
+          );
         } else if (!(permissionsCheck = await checkUserPermission(command, interaction)).result) {
           throw new MissingPermissionsException(permissionsCheck.missing);
         }
@@ -146,9 +158,13 @@ export class Bot implements IBot {
         this.logger.error(error);
 
         if (error instanceof MissingPermissionsException) {
-          interaction.reply({ content: error.toString(), ephemeral: true }).catch(this.logger.error);
+          interaction
+            .reply({ content: error.toString(), ephemeral: true })
+            .catch(this.logger.error);
         } else {
-          interaction.reply({ content: i18n.__('common.errorCommand'), ephemeral: true }).catch(this.logger.error);
+          interaction
+            .reply({ content: this.modules.$i18n.__('common.errorCommand'), ephemeral: true })
+            .catch(this.logger.error);
         }
       }
     });

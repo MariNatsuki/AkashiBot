@@ -1,19 +1,33 @@
 {
   "compilerOptions": {
-    "strict": true,
-    "outDir": "dist",
-    "target": "ES2021",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "lib": ["ES2021"],
-    "resolveJsonModule": true,
-    "useUnknownInCatchVariables": true,
+    // add Bun type definitions
+    "types": ["bun-types"],
+
+    // enable latest features
+    "lib": ["ESNext"],
+    "module": "esnext",
+    "target": "esnext",
+
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
+
+    "allowJs": true,
     "esModuleInterop": true,
+
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "importHelpers": true,
-    "types": ["node"],
+    "composite": true,
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
     "sourceMap": true,
-    "strictPropertyInitialization": false
+
+    "baseUrl": "./src",
+
+    "outDir": "dist"
   },
   "include": [
     "./src/**/*.ts",
@@ -27,6 +41,5 @@
   "exclude": [
     ".github",
     "dist",
-    "node_modules"
   ]
 }

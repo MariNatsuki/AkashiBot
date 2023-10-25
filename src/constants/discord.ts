@@ -13,11 +13,11 @@ export enum UnicodeEmoji {
   Nine = '9️⃣',
   Ten = '🔟',
   GreenCheckmark = '✅',
-  RedQuestionMark = '❓'
+  RedQuestionMark = '❓',
 }
 
 export enum CommandStatusEmoji {
   Processing = '🔄',
   Done = '✅',
-  Failed = '❌'
+  Failed = '❌',
 }

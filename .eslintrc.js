@@ -2,7 +2,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: 'tsconfig.json',
-    sourceType: 'module'
+    sourceType: 'module',
   },
   ignorePatterns: ['node_modules/**', '**/dist/**', 'ChatGPT/**'],
   extends: [
@@ -11,13 +11,13 @@ module.exports = {
     'plugin:import/typescript',
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended'
+    'plugin:prettier/recommended',
   ],
   plugins: ['@typescript-eslint/eslint-plugin', 'prettier', 'simple-import-sort'],
   root: true,
   env: {
     node: true,
-    jest: true
+    jest: true,
   },
   rules: {
     'prettier/prettier': 'error',
@@ -26,10 +26,10 @@ module.exports = {
       'error',
       {
         argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
-      }
+        varsIgnorePattern: '^_',
+      },
     ],
     'import/no-unresolved': 'off',
-    '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }]
-  }
+    '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+  },
 };
