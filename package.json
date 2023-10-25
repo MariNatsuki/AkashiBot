@@ -10,7 +10,7 @@
     "build": "bun build --target=bun ./src/index.ts --outdir=./dist && bunx --bun ncp ./src/locales ./dist/locales",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint --fix . --ext .ts",
-    "start:prod": "bun run build && bun ./dist/index.js",
+    "start:prod": "bun run ./dist/index.js",
     "start": "bun src/index.ts",
     "start:dev": "bun --watch src/index.ts",
     "typecheck": "tsc --noEmit -p ./tsconfig.json",
