@@ -40,10 +40,10 @@ export default createModule(async ({ modules }) => {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const t: ComposerTranslation = (...args: any[]) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,import/no-named-as-default-member
-    return i18next.t(...(args as any));
-  };
+  function t(this: any, ...args: any[]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.t(...(args as any));
+  }
 
   const getUserLanguage = (userId: string) => userLanguageMap.get(userId) || DEFAULT_LANGUAGE;
 
@@ -60,7 +60,7 @@ export default createModule(async ({ modules }) => {
     name: 'I18n',
     provide: {
       i18n: {
-        t,
+        t: t.bind(i18next) as ComposerTranslation,
         getUserLanguage,
         setUserLanguage,
         // bind,

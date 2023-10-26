@@ -84,6 +84,9 @@ export class CommandManager {
 
       await this.handlePermission(command, interaction);
 
+      this.logger.log(
+        `User ${interaction.user.username}(${interaction.user.id}) used command [${commandName}]`,
+      );
       await command.execute(interaction, this.bot);
     } catch (error: unknown) {
       await this.handleCommandError(error, interaction);
