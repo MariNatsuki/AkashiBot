@@ -1,7 +1,7 @@
 import type { Client, Interaction } from 'discord.js';
 import { Events, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
-import { isFunction } from 'lodash';
+import { isFunction, sortBy } from 'lodash';
 import { dirname, join } from 'path';
 
 import type { IBot, Modules } from '../../types/bot';
@@ -36,7 +36,7 @@ export class Bot implements IBot {
 
   private async loadModules() {
     const modulesPath = join(dirname(Bun.main), 'modules');
-    const moduleFiles = readdirSync(modulesPath).filter(file => !file.endsWith('.map'));
+    const moduleFiles = sortBy(readdirSync(modulesPath).filter(file => !file.endsWith('.map')));
 
     for (const file of moduleFiles) {
       const module = (await import(join(modulesPath, `${file}`))).default;
