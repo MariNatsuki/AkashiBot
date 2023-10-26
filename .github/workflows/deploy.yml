@@ -30,6 +30,6 @@ jobs:
             cd ${{ vars.WORK_DIR }}
             git fetch origin master
             git reset --hard origin/master
-            docker compose down
-            docker system prune -a
-            docker compose up -d --build
+            make down
+            make clean
+            make start-build
