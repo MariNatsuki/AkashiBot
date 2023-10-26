@@ -16,5 +16,7 @@ export interface Command<Cache extends CacheType = CacheType> {
   botPermissions?: PermissionResolvable[];
   cooldown?: number;
   data: CommandBuilder | ((bot: IBot) => CommandBuilder);
-  execute(interaction: ChatInputCommandInteraction<Cache>, bot: IBot): unknown | Promise<unknown>;
+  execute(interaction: ChatInputCommandInteraction<Cache>, bot: IBot): Awaitable<unknown>;
 }
+
+export type ParsedCommand = Omit<Command, 'data'> & { name: string; data: CommandBuilder };

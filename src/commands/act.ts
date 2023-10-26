@@ -14,7 +14,7 @@ export default createCommand({
   data: bot =>
     new SlashCommandBuilder()
       .setName('act')
-      .setDescription(bot.modules.$i18n.__mf('act.description', { botName: bot.name }))
+      .setDescription(bot.modules.$i18n.t('act.description', { botName: bot.name }))
       .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild),
   async execute(
     interaction,
@@ -47,7 +47,7 @@ export default createCommand({
     }
 
     const reply = await interaction.reply({
-      content: $i18n.__mf('act.chooseRole', { botName: interaction.client.user?.username }),
+      content: $i18n.t('act.chooseRole', { botName: interaction.client.user?.username }),
       components: [...rows],
       fetchReply: true,
     });
@@ -69,7 +69,7 @@ export default createCommand({
 
       if (!isValidRole(role)) {
         await interaction.reply({
-          content: $i18n.__('act.invalidRole'),
+          content: $i18n.t('act.invalidRole'),
           ephemeral: true,
         });
         return;
@@ -79,7 +79,7 @@ export default createCommand({
 
       // Edit the original message to update it with the selected role and remove the action row buttons
       await reply.edit({
-        content: $i18n.__mf('act.success', {
+        content: $i18n.t('act.success', {
           botName: interaction.client.user?.username || '',
           role,
         }),
@@ -92,7 +92,7 @@ export default createCommand({
     collector.on('end', async () => {
       // Only display a timeout message if no interactions were collected
       if (collector.collected.size === 0) {
-        await reply.edit({ content: $i18n.__mf('act.timeout'), components: [] });
+        await reply.edit({ content: $i18n.t('act.timeout'), components: [] });
       }
     });
   },

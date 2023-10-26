@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-empty-interface */
 import './module';
 
-import type { CacheType, Collection } from 'discord.js';
-import type { Command } from 'ioredis';
-
-import type { CommandBuilder } from '../src/interfaces/command';
+import type { CommandManager } from '../src/core/command-manager.ts';
 
 export interface Module<Injections extends Record<string, any> = Record<string, any>> {
-  (bot: IBot):
+  (bot: _IBot):
     | Awaitable<void>
     | Awaitable<{
         name?: string;
@@ -15,14 +12,17 @@ export interface Module<Injections extends Record<string, any> = Record<string, 
       }>;
 }
 
-export interface Modules {
-  [key: string]: any;
+export interface _Modules {
+  [key: string]: unknown;
 }
 
 export interface _IBot {
   name: string | undefined;
-  commands: Collection<string, Omit<Command<CacheType>, 'data'> & { data: CommandBuilder }>;
+  commandManager: CommandManager;
+  modules: _Modules;
 }
+
+export interface Modules extends _Modules {}
 
 export interface IBot extends _IBot {
   modules: Modules;

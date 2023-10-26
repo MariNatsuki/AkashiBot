@@ -8,13 +8,20 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "bun build --target=bun ./src/index.ts --outdir=./dist && bunx --bun ncp ./src/locales ./dist/locales",
+    "generate:locales": "bun run src/scripts/translator.js ./src/locales en.json",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint --fix . --ext .ts",
-    "start:prod": "bun run ./dist/index.js",
+    "prepare": "husky install",
     "start": "bun src/index.ts",
     "start:dev": "bun --watch src/index.ts",
-    "typecheck": "tsc --noEmit -p ./tsconfig.json",
-    "generate:locales": "bun run src/scripts/translator.js ./src/locales en.json"
+    "start:prod": "bun run ./dist/index.js",
+    "typecheck": "tsc --noEmit -p ./tsconfig.json"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "git add"
+    ]
   },
   "config": {
     "commitizen": {
@@ -28,7 +35,9 @@
     "array-move": "^4.0.0",
     "chatgpt": "^5.2.5",
     "discord.js": "^14.13.0",
-    "i18n": "^0.15.1",
+    "husky": "^8.0.3",
+    "i18next": "^23.6.0",
+    "i18next-fs-backend": "^2.2.0",
     "ioredis": "^5.3.2",
     "jsonfile": "^6.1.0",
     "lodash": "^4.17.21",
@@ -51,6 +60,7 @@
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-simple-import-sort": "^10.0.0",
+    "lint-staged": "^15.0.2",
     "ncp": "^2.0.0",
     "prettier": "^3.0.3"
   },

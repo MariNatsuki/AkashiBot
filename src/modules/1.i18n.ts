@@ -1,41 +1,70 @@
-import { I18n } from 'i18n';
+import i18next from 'i18next';
+import type { FsBackendOptions } from 'i18next-fs-backend';
+import Backend from 'i18next-fs-backend';
+import type Redis from 'ioredis';
+import { forEach } from 'lodash';
 import { dirname, join } from 'path';
 import { createModule } from 'utils/create-module';
 
-import { Logger } from '../utils/logger.ts';
+import type { ComposerTranslation } from '../../types/i18next';
 
-export default createModule(() => {
-  const logger = new Logger('I18n');
+const USER_LANGUAGE_KEY = 'userLanguage';
+const DEFAULT_LANGUAGE = 'en';
 
-  const i18n = new I18n({
-    locales: ['en', 'vi'],
-    directory: join(dirname(Bun.main), 'locales'),
-    defaultLocale: 'en',
-    retryInDefaultLocale: true,
-    objectNotation: true,
+export default createModule(async ({ modules }) => {
+  // const logger = new Logger('I18n');
+  const redis = modules.$redis as Redis;
 
-    logWarnFn: function (msg) {
-      logger.log(msg);
-    },
+  const userLanguageMap = new Map<string, string>();
 
-    logErrorFn: function (msg) {
-      logger.log(msg);
-    },
-
-    missingKeyFn: function (locale, value) {
-      return value;
-    },
-
-    mustacheConfig: {
-      tags: ['{{', '}}'],
-      disable: false,
+  // eslint-disable-next-line import/no-named-as-default-member
+  await i18next.use(Backend).init<FsBackendOptions>({
+    debug: Bun.env.DEBUG,
+    lng: Bun.env.LOCALE || DEFAULT_LANGUAGE,
+    fallbackLng: Bun.env.LOCALE,
+    supportedLngs: ['en', 'vi'],
+    initImmediate: false,
+    load: 'all',
+    backend: {
+      loadPath: join(dirname(Bun.main), 'locales/{{lng}}.json'),
     },
   });
+
+  await fetchUserLanguages();
+
+  async function fetchUserLanguages() {
+    const userLanguages = await redis.hgetall(USER_LANGUAGE_KEY);
+    forEach(userLanguages, (language, userId) => {
+      userLanguageMap.set(userId, language);
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const t: ComposerTranslation = (...args: any[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,import/no-named-as-default-member
+    return i18next.t(...(args as any));
+  };
+
+  const getUserLanguage = (userId: string) => userLanguageMap.get(userId) || DEFAULT_LANGUAGE;
+
+  const setUserLanguage = async (userId: string, language: string) => {
+    userLanguageMap.set(userId, language);
+    await redis.hset(USER_LANGUAGE_KEY, userId, language);
+  };
+
+  // const bind = async (interaction: Interaction) => {
+  //   const language =
+  // };
 
   return {
     name: 'I18n',
     provide: {
-      i18n,
+      i18n: {
+        t,
+        getUserLanguage,
+        setUserLanguage,
+        // bind,
+      },
     },
   };
 });

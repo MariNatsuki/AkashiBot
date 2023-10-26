@@ -8,12 +8,12 @@ export default createCommand({
   data: ({ name, modules: { $i18n } }) =>
     new SlashCommandBuilder()
       .setName('chat')
-      .setDescription($i18n.__mf('chat.description', { botName: name }))
+      .setDescription($i18n.t('chat.description', { botName: name }))
       .addStringOption(option =>
-        option.setName('prompt').setDescription($i18n.__('chat.promptHint')).setRequired(true),
+        option.setName('prompt').setDescription($i18n.t('chat.promptHint')).setRequired(true),
       )
       .addBooleanOption(option =>
-        option.setName('is_private').setDescription($i18n.__('chat.isPrivateHint')),
+        option.setName('is_private').setDescription($i18n.t('chat.isPrivateHint')),
       ),
   async execute(
     interaction: ChatInputCommandInteraction<'cached'>,

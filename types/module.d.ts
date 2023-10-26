@@ -10,7 +10,8 @@ type InjectionType<A extends Module> = A extends Module<infer T> ? Decorate<T> :
 
 type ModulesInjections = InjectionType<typeof import('../src/modules/0.redis').default> &
   InjectionType<typeof import('../src/modules/1.i18n.ts').default> &
-  InjectionType<typeof import('../src/modules/2.chat-gpt.ts').default>;
+  InjectionType<typeof import('../src/modules/2.chat-gpt.ts').default> &
+  InjectionType<typeof import('../src/modules/rest.ts').default>;
 
 declare module './bot' {
   interface Modules extends ModulesInjections {}

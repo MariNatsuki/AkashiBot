@@ -1,4 +1,4 @@
-export class MissingPermissionsException {
+export class MissingPermissionsError {
   constructor(
     public permissions: string[],
     public message: string = 'You are missing permissions:',

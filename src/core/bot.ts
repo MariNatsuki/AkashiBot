@@ -1,40 +1,35 @@
-import type { Client, Interaction, Snowflake } from 'discord.js';
-import { Collection, Events, REST, Routes } from 'discord.js';
+import type { Client, Interaction } from 'discord.js';
+import { Events, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
 import { isFunction } from 'lodash';
 import { dirname, join } from 'path';
 
-import type { _IBot, Modules } from '../../types/bot';
-import { MissingPermissionsException } from '../errors/missing-permissions-exception';
-import type { Command, CommandBuilder } from '../interfaces/command';
-import type { PermissionResult } from '../utils/check-permissions';
-import { checkBotPermission, checkUserPermission } from '../utils/check-permissions';
+import type { IBot, Modules } from '../../types/bot';
 import { Logger } from '../utils/logger';
+import { CommandManager } from './command-manager.ts';
 
-export class Bot implements _IBot {
+export class Bot implements IBot {
   private readonly logger = new Logger('Bot');
-  private readonly rest = new REST({ version: '9' }).setToken(Bun.env.DISCORD_TOKEN);
 
   public name: string | undefined;
   public modules = {} as Modules;
-  public commands = new Collection<string, Omit<Command, 'data'> & { data: CommandBuilder }>();
-  public cooldowns = new Collection<string, Collection<Snowflake, number>>();
+  public commandManager = new CommandManager(join(dirname(Bun.main), 'commands'), this);
 
-  public constructor(public readonly client: Client) {
-    this.client.login(process.env.DISCORD_TOKEN).catch(error => this.logger.error(error));
+  public constructor(public readonly client: Client<true>) {
+    this.client.login(Bun.env.DISCORD_TOKEN).catch(error => this.logger.error(error));
 
-    this.client.on('ready', async () => {
+    this.client.once(Events.ClientReady, async () => {
       this.logger.log(`${this.client.user?.username} ready!`);
       this.name = this.client.user?.username;
 
       await this.loadModules();
 
       // await this.deleteSlashCommands();
-      await this.registerSlashCommands();
+      await this.commandManager.registerCommands();
     });
 
-    this.client.on('warn', info => this.logger.log(info));
-    this.client.on('error', this.logger.error);
+    this.client.on(Events.Warn, info => this.logger.log(info));
+    this.client.on(Events.Error, this.logger.error);
 
     this.onInteractionCreate();
   }
@@ -67,104 +62,17 @@ export class Bot implements _IBot {
     if (!this.client.user?.id) {
       return;
     }
-    await this.rest
+    await this.modules.$rest
       .put(Routes.applicationCommands(this.client.user.id), { body: [] })
       .then(() => this.logger.log('Successfully deleted all application commands.'))
       .catch(this.logger.error);
-  }
-
-  private async registerSlashCommands() {
-    if (!this.client.user?.id) {
-      return;
-    }
-    const commandsPath = join(dirname(Bun.main), 'commands');
-    const commandFiles = readdirSync(commandsPath).filter(file => !file.endsWith('.map'));
-    const commandDatas = [];
-
-    for (const file of commandFiles) {
-      const command: Command = (await import(join(commandsPath, `${file}`))).default;
-      const commandData = isFunction(command.data) ? command.data(this) : command.data;
-      command.userPermissions?.forEach(permission =>
-        commandData.setDefaultMemberPermissions(permission as bigint),
-      );
-
-      commandDatas.push(commandData);
-      this.commands.set(commandData.name, {
-        ...command,
-        data: commandData,
-      });
-    }
-
-    const registeredCommands = (await this.rest.put(
-      Routes.applicationCommands(this.client.user.id),
-      {
-        body: commandDatas,
-      },
-    )) as { name: string; description: string }[];
-    registeredCommands.forEach(({ name }) => this.logger.log(`Command [${name}] registered!`));
   }
 
   private onInteractionCreate() {
     this.client.on(Events.InteractionCreate, async (interaction: Interaction): Promise<void> => {
       if (!interaction.isChatInputCommand()) return;
 
-      const command = this.commands.get(interaction.commandName);
-
-      if (!command) return;
-
-      if (!this.cooldowns.has(interaction.commandName)) {
-        this.cooldowns.set(interaction.commandName, new Collection());
-      }
-
-      const now = Date.now();
-      const timestamps = this.cooldowns.get(interaction.commandName);
-      const cooldownAmount = (command.cooldown || 1) * 1000;
-
-      const timestamp = timestamps?.get(interaction.user.id);
-      if (timestamp) {
-        const expirationTime = timestamp + cooldownAmount;
-
-        if (now < expirationTime) {
-          const timeLeft = (expirationTime - now) / 1000;
-          await interaction.reply({
-            content: this.modules.$i18n.__mf('common.cooldownMessage', {
-              time: timeLeft.toFixed(1),
-              name: interaction.commandName,
-            }),
-            ephemeral: true,
-          });
-          return;
-        }
-      }
-
-      timestamps?.set(interaction.user.id, now);
-      setTimeout(() => timestamps?.delete(interaction.user.id), cooldownAmount);
-
-      try {
-        let permissionsCheck: PermissionResult;
-        if (!(permissionsCheck = await checkBotPermission(command, interaction)).result) {
-          throw new MissingPermissionsException(
-            permissionsCheck.missing,
-            `${this.name} missing permissions: `,
-          );
-        } else if (!(permissionsCheck = await checkUserPermission(command, interaction)).result) {
-          throw new MissingPermissionsException(permissionsCheck.missing);
-        }
-
-        command.execute(interaction, this);
-      } catch (error: unknown) {
-        this.logger.error(error);
-
-        if (error instanceof MissingPermissionsException) {
-          interaction
-            .reply({ content: error.toString(), ephemeral: true })
-            .catch(this.logger.error);
-        } else {
-          interaction
-            .reply({ content: this.modules.$i18n.__('common.errorCommand'), ephemeral: true })
-            .catch(this.logger.error);
-        }
-      }
+      await this.commandManager.executeCommand(interaction);
     });
   }
 }

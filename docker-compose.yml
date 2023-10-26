@@ -4,6 +4,8 @@ services:
   app:
     container_name: "${APP_NAME}_${APP_ENV}_app"
     build: .
+    environment:
+      - FORCE_COLOR=1
     env_file:
       - .env
     links:
@@ -14,18 +16,19 @@ services:
       - akashi-bot-network
 
   redis:
-    image: redis:alpine
+    image: bitnami/redis:latest
     container_name: "${APP_NAME}_${APP_ENV}_redis"
     restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PORT_NUMBER=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     env_file:
       - .env
-    ports:
-      - "${REDIS_PORT}:6379"
-    command: redis-server --save 20 1 --loglevel warning
     networks:
       - akashi-bot-network
     volumes:
-      - ./.docker/redis/data:/data
+      - ./.docker/redis/data:/bitnami/redis/data
 
 networks:
   akashi-bot-network:

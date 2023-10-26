@@ -4,7 +4,7 @@ import type {
   PermissionsBitField,
 } from 'discord.js';
 
-import type { Command } from '../interfaces/command';
+import type { ParsedCommand } from '../interfaces/command';
 
 export interface PermissionResult {
   result: boolean;
@@ -12,7 +12,7 @@ export interface PermissionResult {
 }
 
 export async function checkUserPermission(
-  { userPermissions: requiredUserPermissions = [] }: Command,
+  { userPermissions: requiredUserPermissions = [] }: ParsedCommand,
   interaction: ChatInputCommandInteraction,
 ) {
   if (!requiredUserPermissions.length) return { result: true, missing: [] };
@@ -22,7 +22,7 @@ export async function checkUserPermission(
 }
 
 export async function checkBotPermission(
-  { botPermissions: requiredBotPermissions = [] }: Command,
+  { botPermissions: requiredBotPermissions = [] }: ParsedCommand,
   interaction: ChatInputCommandInteraction,
 ) {
   if (!requiredBotPermissions.length) return { result: true, missing: [] };

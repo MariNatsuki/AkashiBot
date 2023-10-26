@@ -2,6 +2,7 @@ declare module 'bun' {
   interface Env {
     APP_NAME: string;
     APP_ENV: string;
+    DEBUG?: boolean;
 
     REDIS_HOST: string;
     REDIS_PASSWORD?: string;

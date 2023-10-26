@@ -1,15 +1,9 @@
-import { isString } from 'lodash';
+import chalk from 'chalk';
+import { isString, upperCase } from 'lodash';
 import type { Logger as WinstonLogger } from 'winston';
 import { createLogger, format, transports } from 'winston';
 
 const { combine, timestamp, printf } = format;
-
-const Colors = {
-  info: '\x1b[36m',
-  error: '\x1b[31m',
-  warn: '\x1b[33m',
-  verbose: '\x1b[43m',
-};
 
 export class Logger {
   private readonly logger: WinstonLogger;
@@ -20,14 +14,25 @@ export class Logger {
       format: combine(
         timestamp(),
         printf(({ level, message, timestamp, trace }) => {
-          return `\x1b[0m[${timestamp}] [${
-            Colors[level as keyof typeof Colors]
-          }${level.toUpperCase()}\x1b[0m] ${
-            context ? `[\x1b[1m${context}\x1b[0m] ` : ''
+          return `[${timestamp}] [${this.getLevelLabel(level)}] ${
+            context ? `[${chalk.bold(context)}] ` : ''
           }${message}${trace ? `\n${trace}` : ''}`;
         }),
       ),
     });
+  }
+
+  private getLevelLabel(level: string) {
+    switch (level) {
+      case 'info':
+        return chalk.cyan('INFO');
+      case 'error':
+        return chalk.bgRed('ERROR');
+      case 'warn':
+        return chalk.bgYellow.black('WARN');
+      default:
+        return upperCase(level);
+    }
   }
 
   log = (message: string): void => {

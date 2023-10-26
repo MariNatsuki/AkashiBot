@@ -6,12 +6,13 @@ import { createCommand } from '../utils/create-command';
 
 export default createCommand({
   data: ({ modules: { $i18n } }) =>
-    new SlashCommandBuilder().setName('help').setDescription($i18n.__('help.description')),
+    new SlashCommandBuilder().setName('help').setDescription($i18n.t('help.description')),
   async execute(interaction: CommandInteraction, bot) {
     const {
+      commandManager,
       modules: { $i18n },
     } = bot;
-    const commands = bot.commands.filter(cmd => {
+    const commands = commandManager.commands.filter(cmd => {
       // Check if the user has permission to run this command
       const permissions = interaction.member?.permissions;
       const commandPermissions = cmd.data.default_member_permissions;
@@ -25,8 +26,8 @@ export default createCommand({
     });
 
     const helpEmbed = new EmbedBuilder()
-      .setTitle($i18n.__mf('help.embedTitle', { botName: interaction.client.user?.username }))
-      .setDescription(`**${$i18n.__('help.embedDescription')}**\n\n`)
+      .setTitle($i18n.t('help.embedTitle', { botName: interaction.client.user?.username }))
+      .setDescription(`**${$i18n.t('help.embedDescription')}**\n\n`)
       .setColor('#F8AA2A')
       .setFooter({
         text: `For more information about a specific command, type /<command>`,
