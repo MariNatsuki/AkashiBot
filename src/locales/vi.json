@@ -1,25 +1,25 @@
 {
-  "chat": {
-    "description": "Có một cuộc trò chuyện vui vẻ với {botName} bằng cách sử dụng ChatGPT.",
-    "promptHint": "Bạn muốn nói chuyện về điều gì?",
-    "isPrivateHint": "Nói chuyện riêng tư với {botName}.",
-    "thinking": "⏳ Tôi đang suy nghĩ, vui lòng đợi..."
-  },
-  "act": {
-    "description": "Cho phép {botName} đóng vai những nhân vật đã được thiết lập trước.",
-    "invalidRole": "Bạn đã nhập một Vai trò không hợp lệ, vui lòng thử lại.",
-    "success": "{botName} sẽ bắt đầu đóng vai như {role} từ bây giờ.",
-    "chooseRole": "Vui lòng chọn một Vai trò cho {botName}:",
-    "timeout": "Bạn đã mất quá nhiều thời gian để lựa chọn. Vui lòng thử lại..."
-  },
   "common": {
     "on": "**bật**",
     "off": "**tắt**",
     "enabled": "**đã bật**",
     "disabled": "**đã tắt**",
-    "errorNotChannel": "Bạn cần tham gia một kênh thoại trước!",
-    "cooldownMessage": "Vui lòng đợi thêm {time} giây trước khi sử dụng lệnh `{name}`.",
+    "errorNotChannel": "Bạn cần tham gia vào kênh thoại trước!",
+    "cooldownMessage": "Vui lòng đợi thêm {{time}} giây nữa trước khi sử dụng lệnh `{{name}}`.",
     "errorCommand": "Có lỗi xảy ra khi thực hiện lệnh đó."
+  },
+  "chat": {
+    "description": "Trò chuyện vui vẻ với {{botName}} bằng ChatGPT.",
+    "promptHint": "Bạn muốn nói về điều gì?",
+    "isPrivateHint": "Nói riêng tư với {{botName}}.",
+    "thinking": "⏳ Tôi đang suy nghĩ, vui lòng đợi..."
+  },
+  "act": {
+    "description": "Cho phép {{botName}} đóng vai như các nhân vật được thiết lập sẵn.",
+    "invalidRole": "Bạn đã nhập một Vai trò không hợp lệ, vui lòng thử lại.",
+    "success": "{{botName}} sẽ bắt đầu đóng vai như {{role}} từ bây giờ.",
+    "chooseRole": "Vui lòng chọn một vai trò cho {{botName}}:",
+    "timeout": "Bạn đã mất quá nhiều thời gian để lựa chọn. Vui lòng thử lại..."
   },
   "help": {
     "embedTitle": "Trợ giúp",

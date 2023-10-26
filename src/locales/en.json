@@ -5,20 +5,20 @@
     "enabled": "**enabled**",
     "disabled": "**disabled**",
     "errorNotChannel": "You need to join a voice channel first!",
-    "cooldownMessage": "Please wait {time} more second(s) before reusing the `{name}` command.",
+    "cooldownMessage": "Please wait {{time}} more second(s) before reusing the `{{name}}` command.",
     "errorCommand": "There was an error executing that command."
   },
   "chat": {
-    "description": "Have a fun conversation with {botName} using ChatGPT.",
+    "description": "Have a fun conversation with {{botName}} using ChatGPT.",
     "promptHint": "What you want to talk about.",
-    "isPrivateHint": "Talk in private with {botName}.",
+    "isPrivateHint": "Talk in private with {{botName}}.",
     "thinking": "⏳ I'm thinking, please wait..."
   },
   "act": {
-    "description": "Allow {botName} to act as preset characters.",
+    "description": "Allow {{botName}} to act as preset characters.",
     "invalidRole": "You input an invalid Role, please try again.",
-    "success": "{botName} will start acting as {role} from now on.",
-    "chooseRole": "Please choose a role for {botName}:",
+    "success": "{{botName}} will start acting as {{role}} from now on.",
+    "chooseRole": "Please choose a role for {{botName}}:",
     "timeout": "You took too long to make a selection. Please try again..."
   },
   "help": {
