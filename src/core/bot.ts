@@ -72,7 +72,7 @@ export class Bot implements IBot {
     this.client.on(Events.InteractionCreate, async (interaction: Interaction): Promise<void> => {
       if (!interaction.isChatInputCommand()) return;
 
-      await this.commandManager.executeCommand(interaction);
+      await this.commandManager.executeCommand(this.modules.$i18n.bind(interaction));
     });
   }
 }

@@ -1,9 +1,10 @@
-import type { ChatInputCommandInteraction, Snowflake } from 'discord.js';
+import type { Snowflake } from 'discord.js';
 import { Collection, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
 import { isFunction } from 'lodash';
 import { join } from 'path';
 
+import type { LocalizedChatInputCommandInteraction } from '../../types/discordjs';
 import { CommandNotFoundError } from '../errors/command-not-found.error.ts';
 import { CommandOnCooldownError } from '../errors/command-on-cooldown.error.ts';
 import { MissingPermissionsError } from '../errors/missing-permissions.error.ts';
@@ -75,7 +76,7 @@ export class CommandManager {
     return parsedCommand;
   }
 
-  async executeCommand(interaction: ChatInputCommandInteraction) {
+  async executeCommand(interaction: LocalizedChatInputCommandInteraction) {
     const { commandName } = interaction;
     try {
       const command = this.getCommand(commandName);
@@ -93,7 +94,10 @@ export class CommandManager {
     }
   }
 
-  private async handleCommandError(error: unknown, interaction: ChatInputCommandInteraction) {
+  private async handleCommandError(
+    error: unknown,
+    interaction: LocalizedChatInputCommandInteraction,
+  ) {
     this.logger.error(error);
 
     const method = interaction.deferred ? 'editReply' : 'reply';
@@ -151,7 +155,10 @@ export class CommandManager {
     setTimeout(() => timestamps?.delete(userId), cooldownAmount);
   }
 
-  private async handlePermission(command: ParsedCommand, interaction: ChatInputCommandInteraction) {
+  private async handlePermission(
+    command: ParsedCommand,
+    interaction: LocalizedChatInputCommandInteraction,
+  ) {
     let permissionsCheck: PermissionResult;
     if (!(permissionsCheck = await checkBotPermission(command, interaction)).result) {
       throw new MissingPermissionsError(

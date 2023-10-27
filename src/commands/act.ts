@@ -20,7 +20,6 @@ export default createCommand({
     interaction,
     {
       modules: {
-        $i18n,
         $chatgpt: { setChannelRole },
       },
     },
@@ -47,7 +46,7 @@ export default createCommand({
     }
 
     const reply = await interaction.reply({
-      content: $i18n.t('act.chooseRole', { botName: interaction.client.user?.username }),
+      content: interaction.t('act.chooseRole', { botName: interaction.client.user?.username }),
       components: [...rows],
       fetchReply: true,
     });
@@ -58,29 +57,29 @@ export default createCommand({
       dispose: false,
     });
 
-    collector.on('collect', async interaction => {
-      if (!interaction.isButton()) return;
+    collector.on('collect', async buttonInteraction => {
+      if (!buttonInteraction.isButton()) return;
 
-      const role = interaction.customId.replace(/^set-role-/, '');
+      const role = buttonInteraction.customId.replace(/^set-role-/, '');
 
       function isValidRole(role: string): role is Role {
         return Object.keys(Role).includes(role);
       }
 
       if (!isValidRole(role)) {
-        await interaction.reply({
-          content: $i18n.t('act.invalidRole'),
+        await buttonInteraction.reply({
+          content: interaction.t('act.invalidRole'),
           ephemeral: true,
         });
         return;
       }
 
-      await setChannelRole(interaction.channelId, role);
+      await setChannelRole(buttonInteraction.channelId, role);
 
       // Edit the original message to update it with the selected role and remove the action row buttons
       await reply.edit({
-        content: $i18n.t('act.success', {
-          botName: interaction.client.user?.username || '',
+        content: interaction.t('act.success', {
+          botName: buttonInteraction.client.user?.username || '',
           role,
         }),
         components: [],
@@ -92,7 +91,7 @@ export default createCommand({
     collector.on('end', async () => {
       // Only display a timeout message if no interactions were collected
       if (collector.collected.size === 0) {
-        await reply.edit({ content: $i18n.t('act.timeout'), components: [] });
+        await reply.edit({ content: interaction.t('act.timeout'), components: [] });
       }
     });
   },

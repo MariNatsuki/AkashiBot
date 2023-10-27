@@ -11,7 +11,7 @@ if [ -z "$1" ]; then
   env=${APP_ENV:-production}
 
   if [ "$env" = "local" ] || [ "$env" = "development" ]; then
-    bun install
+    bun install --ignore-scripts
     exec bun start:dev
   else
     exec bun run start

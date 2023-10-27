@@ -2,6 +2,7 @@
 // import the original type declarations
 import 'i18next';
 
+import type { $Dictionary } from 'i18next/typescript/helpers';
 import type { TOptions } from 'i18next/typescript/options';
 // import all namespaces (for the default language, only)
 import type en from 'locales/en.json';
@@ -27,14 +28,6 @@ type RemoveIndexSignature<T> = {
   [K in keyof T as string extends K ? never : number extends K ? never : K]: T[K];
 };
 
-export type LocaleKey =
-  | string
-  | PickupPaths<{
-      [K in keyof RemovedIndexResources<MessageSchema>]: RemovedIndexResources<MessageSchema>[K];
-    }>;
-
-type NamedValue<T = {}> = T & Record<string, unknown>;
-
 export declare interface ComposerTranslation<
   Messages extends Record<string, any> = {},
   DefinedLocaleMessage extends
@@ -52,40 +45,22 @@ export declare interface ComposerTranslation<
     : IsNever<M> extends false
     ? M
     : never,
+  TOpt extends TOptions = TOptions,
 > {
-  <Key extends string>(key: Key | ResourceKeys | number): string;
+  <Key extends string>(key: Key | ResourceKeys | number, options?: TOpt & $Dictionary): string;
   <Key extends string>(
     key: Key | ResourceKeys | number,
-    plural: number,
-    options?: TOptions,
+    options?: TOpt & $Dictionary & { defaultValue: string },
   ): string;
   <Key extends string>(
     key: Key | ResourceKeys | number,
-    defaultMsg: string,
-    options?: TOptions,
+    defaultValue: string,
+    options?: TOpt & $Dictionary,
   ): string;
-  <Key extends string>(
-    key: Key | ResourceKeys | number,
-    list: unknown[],
-    options?: TOptions,
-  ): string;
-  <Key extends string>(key: Key | ResourceKeys | number, list: unknown[], plural: number): string;
-  <Key extends string>(
-    key: Key | ResourceKeys | number,
-    list: unknown[],
-    defaultMsg: string,
-  ): string;
-  <Key extends string>(
-    key: Key | ResourceKeys | number,
-    named: NamedValue,
-    options?: TOptions,
-  ): string;
-  <Key extends string>(key: Key | ResourceKeys | number, named: NamedValue, plural: number): string;
-  <Key extends string>(
-    key: Key | ResourceKeys | number,
-    named: NamedValue,
-    defaultMsg: string,
-  ): string;
+}
+
+export interface Localized {
+  t: ComposerTranslation;
 }
 
 export {};

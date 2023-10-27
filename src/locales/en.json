@@ -8,6 +8,9 @@
     "cooldownMessage": "Please wait {{time}} more second(s) before reusing the `{{name}}` command.",
     "errorCommand": "There was an error executing that command."
   },
+  "systemMessage": {
+    "appLanguageSet": "App's language set to {{language}}"
+  },
   "chat": {
     "description": "Have a fun conversation with {{botName}} using ChatGPT.",
     "promptHint": "What you want to talk about.",

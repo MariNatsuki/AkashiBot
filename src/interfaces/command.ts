@@ -1,11 +1,7 @@
-import type {
-  CacheType,
-  ChatInputCommandInteraction,
-  PermissionResolvable,
-  SlashCommandBuilder,
-} from 'discord.js';
+import type { CacheType, PermissionResolvable, SlashCommandBuilder } from 'discord.js';
 
 import type { IBot } from '../../types/bot';
+import type { LocalizedChatInputCommandInteraction } from '../../types/discordjs';
 
 export type CommandBuilder =
   | SlashCommandBuilder
@@ -16,7 +12,7 @@ export interface Command<Cache extends CacheType = CacheType> {
   botPermissions?: PermissionResolvable[];
   cooldown?: number;
   data: CommandBuilder | ((bot: IBot) => CommandBuilder);
-  execute(interaction: ChatInputCommandInteraction<Cache>, bot: IBot): Awaitable<unknown>;
+  execute(interaction: LocalizedChatInputCommandInteraction<Cache>, bot: IBot): Awaitable<unknown>;
 }
 
 export type ParsedCommand = Omit<Command, 'data'> & { name: string; data: CommandBuilder };

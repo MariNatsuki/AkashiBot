@@ -8,6 +8,9 @@
     "cooldownMessage": "Vui lòng đợi thêm {{time}} giây nữa trước khi sử dụng lệnh `{{name}}`.",
     "errorCommand": "Có lỗi xảy ra khi thực hiện lệnh đó."
   },
+  "systemMessage": {
+    "appLanguageSet": "Ngôn ngữ của ứng dụng được đặt là {{language}}"
+  },
   "chat": {
     "description": "Trò chuyện vui vẻ với {{botName}} bằng ChatGPT.",
     "promptHint": "Bạn muốn nói về điều gì?",
