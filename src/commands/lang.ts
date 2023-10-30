@@ -3,34 +3,33 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
-  PermissionsBitField,
   SlashCommandBuilder,
 } from 'discord.js';
+import type { LanguageCode } from 'iso-639-1';
+import ISO6391 from 'iso-639-1';
 
-import { Role } from '../constants/system-messages';
 import { createCommand } from '../utils/create-command';
 
 export default createCommand({
   data: ({ name, modules: { $i18n } }) =>
     new SlashCommandBuilder()
-      .setName('act')
-      .setDescription($i18n.t('commands.act.description', { botName: name }))
+      .setName('lang')
+      .setDescription($i18n.t('commands.lang.description', { botName: name }))
       .setDescriptionLocalizations(
-        $i18n.localizeDiscord('commands.act.description', { botName: name }),
-      )
-      .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild),
+        $i18n.localizeDiscord('commands.lang.description', { botName: name }),
+      ),
   async execute(
     interaction,
     {
       modules: {
-        $chatgpt: { setChannelRole },
+        $i18n: { supportedBotLanguage, setUserLanguage },
       },
     },
   ) {
     const rows: ActionRowBuilder<ButtonBuilder>[] = [];
     let rowButtons: ButtonBuilder[] = [];
 
-    Object.values(Role).forEach(role => {
+    supportedBotLanguage.forEach(language => {
       if (rowButtons.length === 5) {
         rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents([...rowButtons]));
         rowButtons = [];
@@ -38,9 +37,9 @@ export default createCommand({
 
       rowButtons.push(
         new ButtonBuilder()
-          .setLabel(role)
+          .setLabel(ISO6391.getNativeName(language))
           .setStyle(ButtonStyle.Primary)
-          .setCustomId(`set-role-${role}`),
+          .setCustomId(`set-language-${language}`),
       );
     });
 
@@ -49,7 +48,7 @@ export default createCommand({
     }
 
     const reply = await interaction.reply({
-      content: interaction.t('commands.act.chooseRole', {
+      content: interaction.t('commands.lang.selectLanguage', {
         botName: interaction.client.user?.username,
       }),
       components: [...rows],
@@ -66,26 +65,33 @@ export default createCommand({
     collector.on('collect', async buttonInteraction => {
       if (!buttonInteraction.isButton()) return;
 
-      const role = buttonInteraction.customId.replace(/^set-role-/, '');
+      const language = buttonInteraction.customId.replace(/^set-language-/, '');
+      console.log(language);
 
-      function isValidRole(role: string): role is Role {
-        return Object.keys(Role).includes(role);
+      function isValidLanguage(language: string): language is LanguageCode {
+        return (supportedBotLanguage as string[]).includes(language);
       }
 
-      if (!isValidRole(role)) {
+      if (!isValidLanguage(language)) {
         await reply.edit({
-          content: interaction.t('commands.act.invalidRole'),
+          content: interaction.t('commands.lang.invalidLanguage'),
         });
         return;
       }
 
-      await setChannelRole(buttonInteraction.channelId, role);
+      await setUserLanguage(buttonInteraction.user.id, language);
 
-      // Edit the original message to update it with the selected role and remove the action row buttons
-      await reply.edit({
-        content: interaction.t('commands.act.success', {
+      console.log(
+        interaction.t('commands.lang.success', {
           botName: buttonInteraction.client.user?.username || '',
-          role,
+          language: ISO6391.getNativeName(language),
+        }),
+      );
+
+      await reply.edit({
+        content: interaction.t('commands.lang.success', {
+          botName: buttonInteraction.client.user?.username || '',
+          language: ISO6391.getNativeName(language),
         }),
         components: [],
       });
@@ -96,7 +102,7 @@ export default createCommand({
     collector.on('end', async () => {
       // Only display a timeout message if no interactions were collected
       if (collector.collected.size === 0) {
-        await reply.edit({ content: interaction.t('commands.act.timeout'), components: [] });
+        await reply.edit({ content: interaction.t('commands.lang.timeout'), components: [] });
       }
     });
   },

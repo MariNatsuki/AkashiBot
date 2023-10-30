@@ -6,7 +6,10 @@ import { createCommand } from '../utils/create-command';
 
 export default createCommand({
   data: ({ modules: { $i18n } }) =>
-    new SlashCommandBuilder().setName('help').setDescription($i18n.t('help.description')),
+    new SlashCommandBuilder()
+      .setName('help')
+      .setDescription($i18n.t('commands.help.description'))
+      .setDescriptionLocalizations($i18n.localizeDiscord('commands.help.description')),
   async execute(interaction, bot) {
     const { commandManager } = bot;
     const commands = commandManager.commands.filter(cmd => {
@@ -23,11 +26,13 @@ export default createCommand({
     });
 
     const helpEmbed = new EmbedBuilder()
-      .setTitle(interaction.t('help.embedTitle', { botName: interaction.client.user?.username }))
-      .setDescription(`**${interaction.t('help.embedDescription')}**\n\n`)
+      .setTitle(
+        interaction.t('commands.help.embedTitle', { botName: interaction.client.user?.username }),
+      )
+      .setDescription(`**${interaction.t('commands.help.embedDescription')}**\n\n`)
       .setColor('#F8AA2A')
       .setFooter({
-        text: `For more information about a specific command, type /<command>`,
+        text: interaction.t('commands.help.tutorial'),
         iconURL: interaction.client.user?.avatarURL() || undefined,
       });
 
@@ -38,9 +43,12 @@ export default createCommand({
 
       helpEmbed.addFields({
         name: `/${name}`,
-        value: `${description}\n*Permissions Required:* ${
-          permissions.toArray().join(', ') || 'None'
-        }`,
+        value: `${interaction.t(`commands.${name}.description`, description)}\n*${interaction.t(
+          'commands.help.permissionsRequired',
+          {
+            permissions: permissions.toArray().join(', ') || 'None',
+          },
+        )}`,
         inline: false,
       });
     });

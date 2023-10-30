@@ -1,32 +1,54 @@
 {
   "common": {
-    "on": "**bật**",
-    "off": "**tắt**",
-    "enabled": "**đã bật**",
-    "disabled": "**đã tắt**",
-    "errorNotChannel": "Bạn cần tham gia vào kênh thoại trước!",
-    "cooldownMessage": "Vui lòng đợi thêm {{time}} giây nữa trước khi sử dụng lệnh `{{name}}`.",
-    "errorCommand": "Có lỗi xảy ra khi thực hiện lệnh đó."
+    "on": "bật",
+    "off": "tắt",
+    "enabled": "đã bật",
+    "disabled": "đã tắt",
+    "errorNotChannel": "Bạn cần tham gia một kênh thoại trước!",
+    "cooldownMessage": "Vui lòng đợi thêm {{time}} giây trước khi sử dụng lại lệnh {{name}}.",
+    "errorCommand": "Đã xảy ra lỗi khi thực hiện lệnh đó."
   },
   "systemMessage": {
-    "appLanguageSet": "Ngôn ngữ của ứng dụng được đặt là {{language}}"
+    "moduleLoaded": "Module [{{module}}] đã được tải!",
+    "commandRegistered": "Lệnh {{command}} đã được đăng ký!",
+    "commandsRegisteringFailed": "Đăng ký các lệnh không thành công: {{commands}}",
+    "deleteAllCommandsSucceeded": "Đã xóa thành công tất cả các lệnh của ứng dụng.",
+    "userUsedCommand": "Người dùng {{user}}({{userId}}) đã sử dụng lệnh [{{command}}]"
   },
-  "chat": {
-    "description": "Trò chuyện vui vẻ với {{botName}} bằng ChatGPT.",
-    "promptHint": "Bạn muốn nói về điều gì?",
-    "isPrivateHint": "Nói riêng tư với {{botName}}.",
-    "thinking": "⏳ Tôi đang suy nghĩ, vui lòng đợi..."
+  "modules": {
+    "i18n": {
+      "appLanguageSet": "Ngôn ngữ ứng dụng được đặt thành {{language}}",
+      "fetchingUsersLanguage": "Đang lấy thông tin ngôn ngữ của người dùng...",
+      "usersLanguageFetched": "Đã lấy thông tin ngôn ngữ của người dùng!"
+    }
   },
-  "act": {
-    "description": "Cho phép {{botName}} đóng vai như các nhân vật được thiết lập sẵn.",
-    "invalidRole": "Bạn đã nhập một Vai trò không hợp lệ, vui lòng thử lại.",
-    "success": "{{botName}} sẽ bắt đầu đóng vai như {{role}} từ bây giờ.",
-    "chooseRole": "Vui lòng chọn một vai trò cho {{botName}}:",
-    "timeout": "Bạn đã mất quá nhiều thời gian để lựa chọn. Vui lòng thử lại..."
-  },
-  "help": {
-    "embedTitle": "Trợ giúp",
-    "description": "Nhận danh sách các lệnh có sẵn",
-    "embedDescription": "Các lệnh có sẵn"
+  "commands": {
+    "chat": {
+      "description": "Trò chuyện vui vẻ với {{botName}} bằng cách sử dụng ChatGPT.",
+      "promptHint": "Bạn muốn nói chuyện về điều gì.",
+      "isPrivateHint": "Trò chuyện riêng tư với {{botName}}.",
+      "thinking": "⏳ Tôi đang suy nghĩ, vui lòng chờ..."
+    },
+    "act": {
+      "description": "Cho phép {{botName}} đóng vai những nhân vật có sẵn.",
+      "invalidRole": "Bạn đã nhập một vai trò không hợp lệ, vui lòng thử lại.",
+      "success": "{{botName}} sẽ bắt đầu đóng vai {{role}} từ bây giờ.",
+      "chooseRole": "Vui lòng chọn một vai trò cho {{botName}}:",
+      "timeout": "Bạn đã mất quá nhiều thời gian để chọn. Vui lòng thử lại..."
+    },
+    "help": {
+      "embedTitle": "Trợ giúp",
+      "description": "Lấy danh sách các lệnh có sẵn",
+      "embedDescription": "Các lệnh có sẵn",
+      "tutorial": "Để biết thêm thông tin về một lệnh cụ thể, nhập /<lệnh>",
+      "permissionsRequired": "*Yêu cầu Quyền:* {{permissions}}"
+    },
+    "lang": {
+      "description": "Đặt ngôn ngữ mặc định cho {{botName}} để phản hồi.",
+      "selectLanguage": "Vui lòng chọn một ngôn ngữ được hỗ trợ:",
+      "invalidLanguage": "Ngôn ngữ không hợp lệ!",
+      "success": "{{botName}} sẽ phản hồi bằng {{language}}.",
+      "timeout": "Bạn đã mất quá nhiều thời gian để chọn. Vui lòng thử lại..."
+    }
   }
 }

@@ -1,5 +1,5 @@
 import type { Client, Interaction } from 'discord.js';
-import { Events, Routes } from 'discord.js';
+import { Events } from 'discord.js';
 import { readdirSync } from 'fs';
 import { isFunction, sortBy } from 'lodash';
 import { dirname, join } from 'path';
@@ -56,16 +56,6 @@ export class Bot implements IBot {
         }
       }
     }
-  }
-
-  private async deleteSlashCommands() {
-    if (!this.client.user?.id) {
-      return;
-    }
-    await this.modules.$rest
-      .put(Routes.applicationCommands(this.client.user.id), { body: [] })
-      .then(() => this.logger.log('Successfully deleted all application commands.'))
-      .catch(this.logger.error);
   }
 
   private onInteractionCreate() {

@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import type { Snowflake } from 'discord.js';
 import { Collection, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
@@ -38,13 +39,22 @@ export class CommandManager {
       if (commands[name]) {
         this.commands.set(name, commands[name]);
         delete commands[name];
-        this.logger.log(`Command [${name}] registered!`);
+        this.logger.log(
+          this.bot.modules.$i18n.t('systemMessage.commandRegistered', {
+            command: chalk.bold(`/${name}`),
+            interpolation: { escapeValue: false },
+          }),
+        );
       }
     });
 
     const failedCommands = Object.keys(commands);
     if (failedCommands.length) {
-      this.logger.error(`Failed registering commands: `);
+      this.logger.error(
+        this.bot.modules.$i18n.t('systemMessage.commandsRegisteringFailed', {
+          commands: failedCommands.join(', '),
+        }),
+      );
     }
   }
 
@@ -76,8 +86,18 @@ export class CommandManager {
     return parsedCommand;
   }
 
+  private async deleteSlashCommands() {
+    await this.bot.modules.$rest
+      .put(Routes.applicationCommands(this.bot.client.user.id), { body: [] })
+      .then(() =>
+        this.logger.log(this.bot.modules.$i18n.t('systemMessage.deleteAllCommandsSucceeded')),
+      )
+      .catch(this.logger.error);
+  }
+
   async executeCommand(interaction: LocalizedChatInputCommandInteraction) {
     const { commandName } = interaction;
+
     try {
       const command = this.getCommand(commandName);
 
@@ -86,10 +106,15 @@ export class CommandManager {
       await this.handlePermission(command, interaction);
 
       this.logger.log(
-        `User ${interaction.user.username}(${interaction.user.id}) used command [${commandName}]`,
+        this.bot.modules.$i18n.t('systemMessage.userUsedCommand', {
+          user: interaction.user.username,
+          userId: interaction.user.id,
+          command: commandName,
+        }),
       );
       await command.execute(interaction, this.bot);
     } catch (error: unknown) {
+      console.log(error);
       await this.handleCommandError(error, interaction);
     }
   }

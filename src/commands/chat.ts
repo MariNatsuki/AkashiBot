@@ -1,4 +1,3 @@
-import type { LocalizationMap } from 'discord.js';
 import { SlashCommandBuilder } from 'discord.js';
 
 import { createCommand } from '../utils/create-command';
@@ -8,17 +7,22 @@ export default createCommand({
   data: ({ name, modules: { $i18n } }) =>
     new SlashCommandBuilder()
       .setName('chat')
+      .setDescription($i18n.t('commands.chat.description', { botName: name }))
       .setDescriptionLocalizations(
-        $i18n.supportedDiscordLocale.reduce((output, { locale, iso }) => {
-          output[locale] = $i18n.t('chat.description', { botName: name, lng: iso });
-          return output;
-        }, {} as LocalizationMap),
+        $i18n.localizeDiscord('commands.chat.description', { botName: name }),
       )
       .addStringOption(option =>
-        option.setName('prompt').setDescription($i18n.t('chat.promptHint')).setRequired(true),
+        option
+          .setName('prompt')
+          .setDescription($i18n.t('commands.chat.promptHint'))
+          .setDescriptionLocalizations($i18n.localizeDiscord('commands.chat.promptHint'))
+          .setRequired(true),
       )
       .addBooleanOption(option =>
-        option.setName('is_private').setDescription($i18n.t('chat.isPrivateHint')),
+        option
+          .setName('is_private')
+          .setDescription($i18n.t('commands.chat.isPrivateHint'))
+          .setDescriptionLocalizations($i18n.localizeDiscord('commands.chat.isPrivateHint')),
       ),
   async execute(
     interaction,

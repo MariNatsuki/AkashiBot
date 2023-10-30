@@ -9,24 +9,46 @@
     "errorCommand": "There was an error executing that command."
   },
   "systemMessage": {
-    "appLanguageSet": "App's language set to {{language}}"
+    "moduleLoaded": "Module [{{module}}] loaded!",
+    "commandRegistered": "Command //{{command}} registered!",
+    "commandsRegisteringFailed": "Failed registering commands: {{commands}}",
+    "deleteAllCommandsSucceeded": "Successfully deleted all application commands.",
+    "userUsedCommand": "User {{user}}({{userId}}) used command [{{command}}]"
   },
-  "chat": {
-    "description": "Have a fun conversation with {{botName}} using ChatGPT.",
-    "promptHint": "What you want to talk about.",
-    "isPrivateHint": "Talk in private with {{botName}}.",
-    "thinking": "⏳ I'm thinking, please wait..."
+  "modules": {
+    "i18n": {
+      "appLanguageSet": "App's language set to {{language}}",
+      "fetchingUsersLanguage": "Fetching user's languages...",
+      "usersLanguageFetched": "User's languages fetched!"
+    }
   },
-  "act": {
-    "description": "Allow {{botName}} to act as preset characters.",
-    "invalidRole": "You input an invalid Role, please try again.",
-    "success": "{{botName}} will start acting as {{role}} from now on.",
-    "chooseRole": "Please choose a role for {{botName}}:",
-    "timeout": "You took too long to make a selection. Please try again..."
-  },
-  "help": {
-    "embedTitle": "Help",
-    "description": "Get a list of available commands",
-    "embedDescription": "Available commands"
+  "commands": {
+    "chat": {
+      "description": "Have a fun conversation with {{botName}} using ChatGPT.",
+      "promptHint": "What you want to talk about.",
+      "isPrivateHint": "Talk in private with {{botName}}.",
+      "thinking": "⏳ I'm thinking, please wait..."
+    },
+    "act": {
+      "description": "Allow {{botName}} to act as preset characters.",
+      "invalidRole": "You input an invalid Role, please try again.",
+      "success": "{{botName}} will start acting as {{role}} from now on.",
+      "chooseRole": "Please choose a role for {{botName}}:",
+      "timeout": "You took too long to make a selection. Please try again..."
+    },
+    "help": {
+      "embedTitle": "Help",
+      "description": "Get a list of available commands",
+      "embedDescription": "Available commands",
+      "tutorial": "For more information about a specific command, type /<command>",
+      "permissionsRequired": "*Permissions Required:* {{permissions}}"
+    },
+    "lang": {
+      "description": "Set default language for {{botName}} to response in.",
+      "selectLanguage": "Please select a supported language:",
+      "invalidLanguage": "Invalid Language!",
+      "success": "{{botName}} will start responding with you in {{language}}.",
+      "timeout": "You took too long to make a selection. Please try again..."
+    }
   }
 }

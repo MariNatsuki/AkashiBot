@@ -1,17 +1,18 @@
 import chalk from 'chalk';
-import { type Interaction, Locale } from 'discord.js';
-import type { i18n } from 'i18next';
-import { createInstance } from 'i18next';
+import type { Interaction, LocalizationMap } from 'discord.js';
+import { Locale } from 'discord.js';
+import type { i18n, TOptions } from 'i18next';
+import i18next from 'i18next';
 import type { FsBackendOptions } from 'i18next-fs-backend';
 import Backend from 'i18next-fs-backend';
 import type Redis from 'ioredis';
 import type { LanguageCode } from 'iso-639-1';
 import ISO6391 from 'iso-639-1';
-import { forEach, toString } from 'lodash';
+import { forEach, isString, toString } from 'lodash';
 import { dirname, join } from 'path';
 import { createModule } from 'utils/create-module';
 
-import type { ComposerTranslation, Localized } from '../../types/i18next';
+import type { ComposerTranslation, Localized, LocalizeDiscord } from '../../types/i18next';
 import { Logger } from '../utils/logger.ts';
 
 const USER_LANGUAGE_KEY = 'userLanguage';
@@ -45,34 +46,38 @@ export default createModule(async ({ modules }) => {
     );
   }
 
-  await Promise.all(
-    SUPPORTED_LANGUAGES.map(async language => {
-      const languageI18n = createInstance().use(Backend);
-      supportedI18nMap.set(language, languageI18n);
-      await languageI18n.init<FsBackendOptions>({
-        debug: Bun.env.DEBUG,
-        lng: language,
-        fallbackLng: language,
-        supportedLngs: [language],
-        initImmediate: false,
-        load: 'all',
-        backend: {
-          loadPath: join(dirname(Bun.main), 'locales/{{lng}}.json'),
-        },
-      });
-    }),
-  );
+  await i18next.use(Backend).init<FsBackendOptions>({
+    debug: Bun.env.DEBUG,
+    lng: appLanguage,
+    fallbackLng: appLanguage,
+    supportedLngs: SUPPORTED_LANGUAGES,
+    load: 'all',
+    initImmediate: false,
+    backend: {
+      loadPath: join(dirname(Bun.main), 'locales/{{lng}}.json'),
+    },
+  });
 
-  const appI18n = supportedI18nMap.get(appLanguage) as i18n;
   logger.log(
-    appI18n.t('systemMessage.appLanguageSet', {
+    i18next.t('modules.i18n.appLanguageSet', {
       language: chalk.bold(`${appLanguage} (${ISO6391.getName(appLanguage)})`),
     }),
   );
 
-  logger.log("Fetching user's languages...");
+  await Promise.all(
+    SUPPORTED_LANGUAGES.map(async language => {
+      const languageI18n = i18next
+        .cloneInstance({
+          supportedLngs: [language],
+        })
+        .use(Backend);
+      supportedI18nMap.set(language, languageI18n);
+    }),
+  );
+
+  logger.log(i18next.t('modules.i18n.fetchingUsersLanguage'));
   await fetchUserLanguages();
-  logger.log("User's languages fetched!");
+  logger.log(i18next.t('modules.i18n.usersLanguageFetched'));
 
   async function fetchUserLanguages() {
     const userLanguages = await redis.hgetall(USER_LANGUAGE_KEY);
@@ -87,7 +92,7 @@ export default createModule(async ({ modules }) => {
     return toString(this.t(...(args as any)));
   }
 
-  const getUserLanguage = (userId: string) => userLanguageMap.get(userId) || DEFAULT_LANGUAGE;
+  const getUserLanguage = (userId: string) => userLanguageMap.get(userId) || appLanguage;
 
   const setUserLanguage = async (userId: string, language: LanguageCode) => {
     userLanguageMap.set(userId, language);
@@ -96,7 +101,7 @@ export default createModule(async ({ modules }) => {
 
   const bind = <T extends Interaction>(interaction: T) => {
     const userLanguage = getUserLanguage(interaction.user.id);
-    const userI18n = supportedI18nMap.get(userLanguage) || appI18n;
+    const userI18n = supportedI18nMap.get(userLanguage) || i18next;
     Object.assign(interaction, {
       t: t.bind(userI18n) as ComposerTranslation,
     });
@@ -104,13 +109,26 @@ export default createModule(async ({ modules }) => {
     return interaction as any as T & Localized;
   };
 
-  const localizeDiscord = () => {};
+  const localizeDiscord: LocalizeDiscord = (...args): LocalizationMap => {
+    const options: TOptions =
+      (isString(args[1]) ? { ...args[2], defaultValue: args[1] } : args[1]) || {};
+    return supportedDiscordLocale.reduce((output, { locale, iso }) => {
+      output[locale] = toString(
+        i18next.t(args[0], {
+          ...options,
+          lng: iso,
+        }),
+      );
+      return output;
+    }, {} as LocalizationMap);
+  };
 
   return {
     name: 'I18n',
     provide: {
       i18n: {
-        t: t.bind(appI18n) as ComposerTranslation,
+        t: t.bind(i18next) as ComposerTranslation,
+        supportedBotLanguage: SUPPORTED_LANGUAGES,
         supportedDiscordLocale,
         getUserLanguage,
         setUserLanguage,
